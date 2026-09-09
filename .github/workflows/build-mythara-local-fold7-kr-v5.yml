@@ -9,6 +9,7 @@ on:
       - 'tools/mythara_local_kr_full_v4_patch.py'
       - 'tools/mythara_local_fcc_v4_patch.py'
       - 'tools/mythara_local_v5_actionfix_patch.py'
+      - 'tools/mythara_local_v5_compilefix_patch.py'
       - 'tools/mythara-local-dev.jks.b64'
   workflow_dispatch:
 
@@ -62,6 +63,10 @@ jobs:
       - name: Apply v5 action routing fixes
         working-directory: mythara
         run: python3 ../tools/mythara_local_v5_actionfix_patch.py
+
+      - name: Apply v5 Kotlin compile fix
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_compilefix_patch.py
 
       - name: Fix Compose experimental opt-ins
         working-directory: mythara
