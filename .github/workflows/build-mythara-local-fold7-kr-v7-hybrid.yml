@@ -1,0 +1,147 @@
+name: Build Mythara Local Fold7 KR v7 Hybrid APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr-v7-hybrid.yml'
+      - 'tools/mythara_local_patch.py'
+      - 'tools/mythara_local_kr_patch.py'
+      - 'tools/mythara_local_kr_full_v4_patch.py'
+      - 'tools/mythara_local_fcc_v4_patch.py'
+      - 'tools/mythara_local_v5_actionfix_patch.py'
+      - 'tools/mythara_local_v5_compilefix_patch.py'
+      - 'tools/mythara_local_v6_qwen_npu_patch.py'
+      - 'tools/mythara_local_v7_hybrid_patch.py'
+      - 'tools/mythara-local-dev.jks.b64'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Patch fully local Fold7 edition
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_patch.py
+
+      - name: Apply Korean UI overlay baseline
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_patch.py
+
+      - name: Expand Korean UI coverage
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_full_v4_patch.py
+
+      - name: Apply FCC-Mobile orchestration
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_fcc_v4_patch.py
+
+      - name: Apply v5 action routing fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_actionfix_patch.py
+
+      - name: Apply v5 Kotlin compile fix
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_compilefix_patch.py
+
+      - name: Apply v6 Qwen Snapdragon NPU patch
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v6_qwen_npu_patch.py
+
+      - name: Apply v7 hybrid Qwen + ACE-Step patch
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v7_hybrid_patch.py
+
+      - name: Fix Compose experimental opt-ins
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build v7 APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Restore persistent signing key
+        run: |
+          base64 -d tools/mythara-local-dev.jks.b64 > mythara-local-dev.jks
+          keytool -list -keystore mythara-local-dev.jks -storepass mythara-local-dev -alias mythara-local >/dev/null
+
+      - name: Sign stable-package APK
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks mythara-local-dev.jks \
+            --ks-key-alias mythara-local \
+            --ks-pass pass:mythara-local-dev \
+            --key-pass pass:mythara-local-dev \
+            --out Mythara-Local-Fold7-KR-FCC-v7-Hybrid.apk \
+            mythara/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs Mythara-Local-Fold7-KR-FCC-v7-Hybrid.apk
+          sha256sum Mythara-Local-Fold7-KR-FCC-v7-Hybrid.apk | tee Mythara-Local-Fold7-KR-FCC-v7-Hybrid.sha256
+          ls -lh Mythara-Local-Fold7-KR-FCC-v7-Hybrid.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-fcc-v7-hybrid
+          name: Mythara Local Fold7 한국어 FCC v7 Hybrid
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어 FCC v7 Hybrid입니다.
+
+            - 고정 패키지: com.mythara.localkr4
+            - v5와 동일한 고정 서명: 기존 v5/v6 위에 업데이트 설치
+            - Android Agent/FCC: 공식 Qwen3-VL-4B-Instruct · QAIRT w4a16 · Snapdragon 8 Elite / SM8750 Hexagon NPU
+            - 자유 대화/가사: Qwen3-VL-4B-Instruct-Uncensored-abliterated GGUF Q4_K_M 선택 설치
+            - 자유 모델은 GenieX에서 Snapdragon NPU target 우선, 실패 시 Adreno GPU 폴백
+            - 두 Qwen을 동시에 RAM에 적재하지 않고 필요할 때 교체
+            - 화면/사진 이해 지원
+            - FCC Main / Worker / Reviewer / Debugger는 안정성을 위해 공식 QAIRT 모델 사용
+            - ACE-Step 1.5 서버 연동: 실제 보컬+반주 노래 생성
+            - ACE-Step native async API(/release_task → /query_result → /v1/audio) 사용
+            - 생성 음원은 Android Music/Mythara에 MP3/WAV/FLAC 저장 + 자동 재생
+            - 설정 화면에서 ACE-Step LAN/Tailscale/HTTPS 서버 주소와 API 키 설정/테스트
+            - Gemma 4 E2B는 Observe 및 Qwen 실패 시 폴백으로 유지
+            - 기존 색상 이름 변환 / 이미지 생성 라우팅 / 한국어 UI / Shizuku 기능 유지
+
+            참고: ACE-Step 1.5 합성 엔진은 APK 안에서 Snapdragon으로 직접 실행하는 것이 아니라 PC/별도 서버에서 실행합니다. Fold7은 Qwen 추론, 가사/곡 설계, 요청 전송, 음원 저장/재생을 담당합니다.
+          files: |
+            Mythara-Local-Fold7-KR-FCC-v7-Hybrid.apk
+            Mythara-Local-Fold7-KR-FCC-v7-Hybrid.sha256
