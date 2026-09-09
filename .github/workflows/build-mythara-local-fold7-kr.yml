@@ -1,0 +1,91 @@
+name: Build Mythara Local Fold7 KR APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr.yml'
+      - 'tools/mythara_local_patch.py'
+      - 'tools/mythara_local_kr_patch.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Patch Local Fold7 edition
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_patch.py
+
+      - name: Apply Korean UI overlay
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_patch.py
+
+      - name: Fix Compose experimental opt-in
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build Korean APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Prepare APK
+        run: |
+          cp mythara/app/build/outputs/apk/debug/app-debug.apk Mythara-Local-Fold7-KR.apk
+          sha256sum Mythara-Local-Fold7-KR.apk | tee Mythara-Local-Fold7-KR.sha256
+          ls -lh Mythara-Local-Fold7-KR.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-v2
+          name: Mythara Local Fold7 한국어판
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어판입니다.
+            메인 AI는 온디바이스 LiteRT-LM / Gemma 4 E2B를 사용하도록 패치되어 있습니다.
+            Shizuku 및 휴대폰 제어 기능을 유지합니다.
+            기존 영문 로컬판과 충돌하지 않도록 별도 패키지(com.mythara.localkr)로 설치됩니다.
+            Gemma 4 E2B 모델 약 2.6GB는 앱 내부에서 별도로 내려받거나 .litertlm 파일로 가져옵니다.
+          files: |
+            Mythara-Local-Fold7-KR.apk
+            Mythara-Local-Fold7-KR.sha256
