@@ -1,0 +1,82 @@
+name: Build Mythara Local Fold7 APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7.yml'
+      - 'tools/mythara_local_patch.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Patch Local Fold7 edition
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_patch.py
+
+      - name: Fix Compose experimental opt-in
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Prepare APK
+        run: |
+          cp mythara/app/build/outputs/apk/debug/app-debug.apk Mythara-Local-Fold7.apk
+          sha256sum Mythara-Local-Fold7.apk | tee Mythara-Local-Fold7.sha256
+          ls -lh Mythara-Local-Fold7.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-chat-v1
+          name: Mythara Local Fold7
+          prerelease: false
+          make_latest: true
+          body: |
+            Direct-install Galaxy Z Fold7 build. Main agent routes through on-device LiteRT-LM / Gemma. Shizuku and phone-control paths remain enabled. Meta glasses integration is disabled in this build. Gemma 4 E2B model is downloaded separately inside Mythara.
+          files: |
+            Mythara-Local-Fold7.apk
+            Mythara-Local-Fold7.sha256
