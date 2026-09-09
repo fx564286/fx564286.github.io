@@ -6,6 +6,7 @@ on:
       - '.github/workflows/build-mythara-local-fold7-kr.yml'
       - 'tools/mythara_local_patch.py'
       - 'tools/mythara_local_kr_patch.py'
+      - 'tools/mythara_local_chat_v3_patch.py'
   workflow_dispatch:
 
 permissions:
@@ -47,6 +48,10 @@ jobs:
         working-directory: mythara
         run: python3 ../tools/mythara_local_kr_patch.py
 
+      - name: Improve Korean local chat routing
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_chat_v3_patch.py
+
       - name: Fix Compose experimental opt-in
         working-directory: mythara
         run: |
@@ -69,23 +74,25 @@ jobs:
 
       - name: Prepare APK
         run: |
-          cp mythara/app/build/outputs/apk/debug/app-debug.apk Mythara-Local-Fold7-KR.apk
-          sha256sum Mythara-Local-Fold7-KR.apk | tee Mythara-Local-Fold7-KR.sha256
-          ls -lh Mythara-Local-Fold7-KR.apk
+          cp mythara/app/build/outputs/apk/debug/app-debug.apk Mythara-Local-Fold7-KR-v3.apk
+          sha256sum Mythara-Local-Fold7-KR-v3.apk | tee Mythara-Local-Fold7-KR-v3.sha256
+          ls -lh Mythara-Local-Fold7-KR-v3.apk
 
       - name: Publish public download release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: mythara-local-fold7-kr-v2
-          name: Mythara Local Fold7 한국어판
+          tag_name: mythara-local-fold7-kr-v3
+          name: Mythara Local Fold7 한국어판 v3
           prerelease: false
           make_latest: true
           body: |
-            Galaxy Z Fold7용 Mythara Local 한국어판입니다.
-            메인 AI는 온디바이스 LiteRT-LM / Gemma 4 E2B를 사용하도록 패치되어 있습니다.
+            Galaxy Z Fold7용 Mythara Local 한국어판 v3입니다.
+            메인 AI는 온디바이스 LiteRT-LM / Gemma 4 E2B를 사용합니다.
+            v3에서는 도구 선택과 자연어 답변을 별도 추론 단계로 분리해 사용자 문장 복창과 영어 자기소개 문제를 줄였습니다.
+            기본 답변은 한국어이며, 동일 문장 복창이 감지되면 자동으로 한 번 재생성합니다.
             Shizuku 및 휴대폰 제어 기능을 유지합니다.
-            기존 영문 로컬판과 충돌하지 않도록 별도 패키지(com.mythara.localkr)로 설치됩니다.
+            v2와 서명 충돌 없이 함께 설치할 수 있도록 별도 패키지(com.mythara.localkr3)로 설치됩니다.
             Gemma 4 E2B 모델 약 2.6GB는 앱 내부에서 별도로 내려받거나 .litertlm 파일로 가져옵니다.
           files: |
-            Mythara-Local-Fold7-KR.apk
-            Mythara-Local-Fold7-KR.sha256
+            Mythara-Local-Fold7-KR-v3.apk
+            Mythara-Local-Fold7-KR-v3.sha256
