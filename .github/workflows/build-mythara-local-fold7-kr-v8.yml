@@ -1,0 +1,160 @@
+name: Build Mythara Local Fold7 KR FCC v8 APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr-v8.yml'
+      - 'tools/mythara_local_patch.py'
+      - 'tools/mythara_local_kr_patch.py'
+      - 'tools/mythara_local_kr_full_v4_patch.py'
+      - 'tools/mythara_local_fcc_v4_patch.py'
+      - 'tools/mythara_local_v5_actionfix_patch.py'
+      - 'tools/mythara_local_v5_compilefix_patch.py'
+      - 'tools/mythara_local_v6_qwen_npu_patch.py'
+      - 'tools/mythara_local_v7_hybrid_patch.py'
+      - 'tools/mythara_local_v7_pollfix_patch.py'
+      - 'tools/mythara_local_v7_compilefix_patch.py'
+      - 'tools/mythara_local_v8_fix_patch.py'
+      - 'tools/mythara-local-dev.jks.b64'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Patch fully local Fold7 edition
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_patch.py
+
+      - name: Apply Korean UI overlay baseline
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_patch.py
+
+      - name: Expand Korean UI coverage
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_full_v4_patch.py
+
+      - name: Apply FCC-Mobile orchestration
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_fcc_v4_patch.py
+
+      - name: Apply v5 action routing fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_actionfix_patch.py
+
+      - name: Apply v5 Kotlin compile fix
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_compilefix_patch.py
+
+      - name: Apply v6 Qwen Snapdragon NPU patch
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v6_qwen_npu_patch.py
+
+      - name: Apply v7 hybrid Qwen + ACE-Step patch
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v7_hybrid_patch.py
+
+      - name: Apply v7 ACE-Step polling fix
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v7_pollfix_patch.py
+
+      - name: Apply v7 Kotlin compile fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v7_compilefix_patch.py
+
+      - name: Apply v8 Fold7 fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v8_fix_patch.py
+
+      - name: Fix Compose experimental opt-ins
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build v8 APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Restore persistent signing key
+        run: |
+          base64 -d tools/mythara-local-dev.jks.b64 > mythara-local-dev.jks
+          keytool -list -keystore mythara-local-dev.jks -storepass mythara-local-dev -alias mythara-local >/dev/null
+
+      - name: Sign stable-package APK
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks mythara-local-dev.jks \
+            --ks-key-alias mythara-local \
+            --ks-pass pass:mythara-local-dev \
+            --key-pass pass:mythara-local-dev \
+            --out Mythara-Local-Fold7-KR-FCC-v8.apk \
+            mythara/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs Mythara-Local-Fold7-KR-FCC-v8.apk
+          sha256sum Mythara-Local-Fold7-KR-FCC-v8.apk | tee Mythara-Local-Fold7-KR-FCC-v8.sha256
+          ls -lh Mythara-Local-Fold7-KR-FCC-v8.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-fcc-v8
+          name: Mythara Local Fold7 한국어 FCC v8
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어 FCC v8입니다.
+
+            - 고정 패키지: com.mythara.localkr4
+            - v5 이후 동일 고정 서명: 기존 v5/v6/v7 위에 업데이트 설치
+            - Android 17 / 16KB 페이지 크기: android:pageSizeCompat=enabled로 호환 모드 명시 및 시작 경고 억제
+            - 공식 NPU 모델: Qwen3-VL-4B 우선 설치, AI Hub pull/로드 실패 시 Qwen2.5-VL-7B GENIEX_QAIRT w4a16 SM8750 자동 대체
+            - QAIRT precompiled bundle은 compute unit을 강제하지 않고 Snapdragon NPU를 런타임이 선택
+            - 자유 대화/가사: Qwen3-VL-4B Uncensored/Abliterated GGUF Q4_K_M 선택 설치
+            - FCC Main / Worker / Reviewer / Debugger 유지
+            - ACE-Step 1.5: 기존 데스크톱 CLI와 같은 acestep-v15-turbo 기본값
+            - ACE-Step 서버 주소 입력 없이 localhost 및 같은 LAN의 :8001 /health를 자동 검색하고 성공 주소를 기억
+            - CPU ACE-Step 호스트에 맞춘 기본 4-step balanced 생성, 5Hz LM은 기본 OFF
+            - 생성 음원은 Music/Mythara에 저장 후 자동 재생
+            - 기존 이미지 생성, 색상 이름 변환, Shizuku, 한국어 UI 유지
+
+            참고: Android 16KB 경고는 현재 Qualcomm/기타 서드파티 네이티브 라이브러리 일부가 4KB ELF 정렬인 상태라 Android의 공식 16KB backcompat 모드를 명시적으로 사용하는 방식입니다. 라이브러리 자체를 16KB ELF로 재빌드한 것은 아닙니다.
+          files: |
+            Mythara-Local-Fold7-KR-FCC-v8.apk
+            Mythara-Local-Fold7-KR-FCC-v8.sha256
