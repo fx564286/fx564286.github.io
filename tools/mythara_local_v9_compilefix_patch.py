@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# 1) Local image model downloader resume writer.
 p = Path('app/src/main/kotlin/com/mythara/local/LocalImageModelStore.kt')
 s = p.read_text()
 old = '''            val body = resp.body ?: error("${rf.path} 응답이 비어 있습니다")
@@ -37,4 +38,12 @@ if old not in s:
     raise SystemExit('v9 resume writer anchor not found')
 s = s.replace(old, new, 1)
 p.write_text(s)
-print('Mythara v9 image downloader compile/runtime fix applied')
+
+# 2) GenerateImageTool uses the upstream SettingsStore package/API.
+p = Path('app/src/main/kotlin/com/mythara/agent/tools/GenerateImageTool.kt')
+s = p.read_text()
+s = s.replace('import com.mythara.data.settings.SettingsStore', 'import com.mythara.data.SettingsStore')
+s = s.replace('settings.geminiApiKey.first()', 'settings.geminiKeyFlow().first()')
+p.write_text(s)
+
+print('Mythara v9 image generation compile/runtime fixes applied')
