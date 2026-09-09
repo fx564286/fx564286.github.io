@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/build-mythara-local-fold7-kr-v11.yml'
-      - 'tools/mythara_local_v11_reliability_patch.py'
+      - 'tools/mythara_local_v11b_reliability_patch.py'
   workflow_dispatch:
 
 permissions:
@@ -65,7 +65,7 @@ jobs:
 
       - name: Apply v11 reliability fixes
         working-directory: mythara
-        run: python3 ../tools/mythara_local_v11_reliability_patch.py
+        run: python3 ../tools/mythara_local_v11b_reliability_patch.py
 
       - name: Fix Compose experimental opt-ins
         working-directory: mythara
@@ -131,13 +131,13 @@ jobs:
 
             수정 사항:
             - Qualcomm GenieX Android 0.3.5 → 0.3.12 업데이트
-            - GenieX -100005 네트워크 오류에 최대 5회 지수형 재시도 추가, 기존 부분 모델 캐시 유지
+            - GenieX -100005 네트워크 오류 최대 5회 재시도, 기존 부분 모델 캐시 유지
             - Stable Diffusion 약 1041개 파일 다운로드 동시 연결 8 → 2로 축소
-            - Stable Diffusion 파일 목록/개별 파일에 재시도 및 HTTP Range 이어받기 강화
-            - Settings 진입 즉시 실행되던 ACE-Step 대규모 LAN 스캔 제거
+            - Stable Diffusion 파일 목록/개별 파일 재시도 및 HTTP Range 이어받기 강화
+            - Settings 진입 즉시 실행되던 ACE-Step LAN 자동 스캔 제거
             - ACE-Step 수동 검색 동시 연결 48 → 8로 축소
             - ACE-Step은 APK 내장 엔진이 아니라 PC/Termux :8001 서버 클라이언트임을 UI에 명확히 표시
-            - v10의 최신 사용자 이미지 프롬프트 고정, non-debuggable, pageSizeCompat 유지
+            - v10 최신 사용자 이미지 프롬프트 고정, non-debuggable, pageSizeCompat 유지
           files: |
             Mythara-Local-Fold7-KR-FCC-v11.apk
             Mythara-Local-Fold7-KR-FCC-v11.sha256
