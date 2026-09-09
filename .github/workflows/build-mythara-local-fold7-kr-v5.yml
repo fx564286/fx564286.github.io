@@ -1,0 +1,128 @@
+name: Build Mythara Local Fold7 KR v5 Stable APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr-v5.yml'
+      - 'tools/mythara_local_patch.py'
+      - 'tools/mythara_local_kr_patch.py'
+      - 'tools/mythara_local_kr_full_v4_patch.py'
+      - 'tools/mythara_local_fcc_v4_patch.py'
+      - 'tools/mythara_local_v5_actionfix_patch.py'
+      - 'tools/mythara-local-dev.jks.b64'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Patch fully local Fold7 edition
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_patch.py
+
+      - name: Apply Korean UI overlay baseline
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_patch.py
+
+      - name: Expand Korean UI coverage
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_full_v4_patch.py
+
+      - name: Apply FCC-Mobile orchestration
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_fcc_v4_patch.py
+
+      - name: Apply v5 action routing fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_actionfix_patch.py
+
+      - name: Fix Compose experimental opt-ins
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build v5 APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Restore persistent signing key
+        run: |
+          base64 -d tools/mythara-local-dev.jks.b64 > mythara-local-dev.jks
+          keytool -list -keystore mythara-local-dev.jks -storepass mythara-local-dev -alias mythara-local >/dev/null
+
+      - name: Sign stable-package APK
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks mythara-local-dev.jks \
+            --ks-key-alias mythara-local \
+            --ks-pass pass:mythara-local-dev \
+            --key-pass pass:mythara-local-dev \
+            --out Mythara-Local-Fold7-KR-FCC-v5.apk \
+            mythara/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs Mythara-Local-Fold7-KR-FCC-v5.apk
+          sha256sum Mythara-Local-Fold7-KR-FCC-v5.apk | tee Mythara-Local-Fold7-KR-FCC-v5.sha256
+          ls -lh Mythara-Local-Fold7-KR-FCC-v5.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-fcc-v5
+          name: Mythara Local Fold7 한국어 FCC v5
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어 FCC-Mobile v5입니다.
+
+            - 고정 패키지: com.mythara.localkr4
+            - v5부터 고정 서명을 사용해 이후 버전은 같은 앱으로 업데이트 가능
+            - 핑크/분홍/보라/파랑 등 색 이름을 accent_color ARGB로 자동 변환
+            - 이미지 생성 요청을 실제 generate_image 도구로 직접 라우팅
+            - 생성된 이미지를 Canvas에 자동 표시
+            - 기능 질문은 실제 등록 도구 목록 기준으로 답변
+            - 영상 생성/완성 음악 생성은 현재 내장 도구가 없다고 정확히 구분
+            - Main / Worker / Reviewer / Debugger FCC-Mobile 유지
+            - 메인 대화는 온디바이스 LiteRT-LM / Gemma 4 E2B
+
+            중요: v4는 임시 debug 서명이었기 때문에 v5 설치 시 이번 한 번만 v4를 제거해야 할 수 있습니다.
+            v5부터는 같은 패키지와 같은 고정 서명을 사용합니다.
+          files: |
+            Mythara-Local-Fold7-KR-FCC-v5.apk
+            Mythara-Local-Fold7-KR-FCC-v5.sha256
