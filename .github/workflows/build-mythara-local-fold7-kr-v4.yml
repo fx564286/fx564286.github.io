@@ -1,0 +1,109 @@
+name: Build Mythara Local Fold7 KR v4 FCC APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr-v4.yml'
+      - 'tools/mythara_local_patch.py'
+      - 'tools/mythara_local_kr_patch.py'
+      - 'tools/mythara_local_kr_full_v4_patch.py'
+      - 'tools/mythara_local_fcc_v4_patch.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Patch fully local Fold7 edition
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_patch.py
+
+      - name: Apply Korean UI overlay v2 baseline
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_patch.py
+
+      - name: Expand Korean UI coverage v4
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_full_v4_patch.py
+
+      - name: Apply FCC-Mobile v4 orchestration
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_fcc_v4_patch.py
+
+      - name: Fix Compose experimental opt-ins
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build v4 APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Prepare APK and checksum
+        run: |
+          cp mythara/app/build/outputs/apk/debug/app-debug.apk Mythara-Local-Fold7-KR-FCC-v4.apk
+          sha256sum Mythara-Local-Fold7-KR-FCC-v4.apk | tee Mythara-Local-Fold7-KR-FCC-v4.sha256
+          ls -lh Mythara-Local-Fold7-KR-FCC-v4.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-fcc-v4
+          name: Mythara Local Fold7 한국어 FCC v4
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어 FCC-Mobile v4입니다.
+
+            - 메인 AI: 온디바이스 LiteRT-LM / Gemma 4 E2B
+            - MiniMax 메인 채팅 호출 없음
+            - FCC-Mobile: Main / Worker / Reviewer / Debugger 역할을 한 로컬 모델에서 순차 실행
+            - 실제 도구 실행 결과를 Reviewer가 확인한 뒤 최종 응답
+            - 실패 시 Debugger가 최대 3회 범위에서 안전한 복구 도구 선택
+            - Shizuku / Android / Termux 도구 경로 유지
+            - Secret, 권한 확인, 작업, Shizuku, 메모리 동기화, 주요 설정 화면 한국어화 보강
+            - v3와 별도 패키지 com.mythara.localkr4
+
+            Gemma 4 E2B 모델 약 2.6GB는 APK에 포함되지 않습니다.
+            기존에 다운로드한 .litertlm 파일이 있으면 Secret → 로컬 AI 모델 → .litertlm 파일 가져오기에서 재사용할 수 있습니다.
+          files: |
+            Mythara-Local-Fold7-KR-FCC-v4.apk
+            Mythara-Local-Fold7-KR-FCC-v4.sha256
