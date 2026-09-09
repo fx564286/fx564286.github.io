@@ -1,0 +1,143 @@
+name: Build Mythara Local Fold7 KR FCC v11 APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr-v11.yml'
+      - 'tools/mythara_local_v11_reliability_patch.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Apply established local Korean stack through v8
+        working-directory: mythara
+        run: |
+          python3 ../tools/mythara_local_patch.py
+          python3 ../tools/mythara_local_kr_patch.py
+          python3 ../tools/mythara_local_kr_full_v4_patch.py
+          python3 ../tools/mythara_local_fcc_v4_patch.py
+          python3 ../tools/mythara_local_v5_actionfix_patch.py
+          python3 ../tools/mythara_local_v5_compilefix_patch.py
+          python3 ../tools/mythara_local_v6_qwen_npu_patch.py
+          python3 ../tools/mythara_local_v7_hybrid_patch.py
+          python3 ../tools/mythara_local_v7_pollfix_patch.py
+          python3 ../tools/mythara_local_v7_compilefix_patch.py
+          python3 ../tools/mythara_local_v8_fix_patch.py
+
+      - name: Apply v9 local image generation
+        working-directory: mythara
+        run: |
+          python3 ../tools/mythara_local_v9_local_image_patch.py
+          python3 ../tools/mythara_local_v9_compilefix_patch.py
+
+      - name: Apply v10 routing and Android warning fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v10_prompt_compat_patch.py
+
+      - name: Apply v11 reliability fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v11_reliability_patch.py
+
+      - name: Fix Compose experimental opt-ins
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Verify v11 source changes
+        working-directory: mythara
+        run: |
+          grep -n 'geniex-android:0.3.12' app/build.gradle.kts
+          grep -n 'versionCode = 11' app/build.gradle.kts
+          grep -n 'MAX_PARALLEL = 2' app/src/main/kotlin/com/mythara/local/LocalImageModelStore.kt
+          grep -n 'MODEL_PULL_ATTEMPTS = 5' app/src/main/kotlin/com/mythara/local/QwenNpuRuntime.kt
+          ! grep -n 'init { autoDiscover() }' app/src/main/kotlin/com/mythara/local/MusicSetupViewModel.kt
+          grep -n 'isDebuggable = false' app/build.gradle.kts
+          grep -n 'android:pageSizeCompat="enabled"' app/src/main/AndroidManifest.xml
+
+      - name: Build v11 APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Restore persistent signer
+        shell: bash
+        run: |
+          base64 -d tools/mythara-local-dev.jks.b64 > mythara-local-dev.jks
+          SIGN_PASS="$(grep -m1 -- '--ks-pass pass:' .github/workflows/build-mythara-local-fold7-kr-v8.yml | sed -E 's/.*--ks-pass pass:([^ ]+).*/\1/' | tr -d '\\')"
+          echo "SIGN_PASS=$SIGN_PASS" >> "$GITHUB_ENV"
+
+      - name: Sign stable-package APK
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks mythara-local-dev.jks \
+            --ks-key-alias mythara-local \
+            --ks-pass env:SIGN_PASS \
+            --key-pass env:SIGN_PASS \
+            --out Mythara-Local-Fold7-KR-FCC-v11.apk \
+            mythara/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs Mythara-Local-Fold7-KR-FCC-v11.apk
+          sha256sum Mythara-Local-Fold7-KR-FCC-v11.apk | tee Mythara-Local-Fold7-KR-FCC-v11.sha256
+          ls -lh Mythara-Local-Fold7-KR-FCC-v11.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-fcc-v11
+          name: Mythara Local Fold7 한국어 FCC v11
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어 FCC v11 신뢰성 핫픽스.
+            동일 패키지 com.mythara.localkr4와 기존 고정 서명을 유지하므로 v10 위에 업데이트 설치할 수 있습니다.
+
+            수정 사항:
+            - Qualcomm GenieX Android 0.3.5 → 0.3.12 업데이트
+            - GenieX -100005 네트워크 오류에 최대 5회 지수형 재시도 추가, 기존 부분 모델 캐시 유지
+            - Stable Diffusion 약 1041개 파일 다운로드 동시 연결 8 → 2로 축소
+            - Stable Diffusion 파일 목록/개별 파일에 재시도 및 HTTP Range 이어받기 강화
+            - Settings 진입 즉시 실행되던 ACE-Step 대규모 LAN 스캔 제거
+            - ACE-Step 수동 검색 동시 연결 48 → 8로 축소
+            - ACE-Step은 APK 내장 엔진이 아니라 PC/Termux :8001 서버 클라이언트임을 UI에 명확히 표시
+            - v10의 최신 사용자 이미지 프롬프트 고정, non-debuggable, pageSizeCompat 유지
+          files: |
+            Mythara-Local-Fold7-KR-FCC-v11.apk
+            Mythara-Local-Fold7-KR-FCC-v11.sha256
