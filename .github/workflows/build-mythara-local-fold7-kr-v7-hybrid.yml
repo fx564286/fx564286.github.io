@@ -13,6 +13,7 @@ on:
       - 'tools/mythara_local_v6_qwen_npu_patch.py'
       - 'tools/mythara_local_v7_hybrid_patch.py'
       - 'tools/mythara_local_v7_pollfix_patch.py'
+      - 'tools/mythara_local_v7_compilefix_patch.py'
       - 'tools/mythara-local-dev.jks.b64'
   workflow_dispatch:
 
@@ -82,6 +83,10 @@ jobs:
       - name: Apply v7 ACE-Step polling fix
         working-directory: mythara
         run: python3 ../tools/mythara_local_v7_pollfix_patch.py
+
+      - name: Apply v7 Kotlin compile fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v7_compilefix_patch.py
 
       - name: Fix Compose experimental opt-ins
         working-directory: mythara
