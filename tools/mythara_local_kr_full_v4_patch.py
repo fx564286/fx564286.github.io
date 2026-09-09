@@ -1,9 +1,9 @@
 from pathlib import Path
 
 # Mythara Local Fold7 KR v4 — expanded Korean UI overlay.
-# This runs after the existing KR overlay and targets the hard-coded Compose
-# strings that remained English in v2/v3. Product/protocol names such as
-# Shizuku, Termux, GitHub, Gemma, LiteRT-LM, API, JSON remain untranslated.
+# Applied after the existing Korean overlay. Only explicit visible Compose
+# strings are replaced; navigation routes, enum values and protocol payloads
+# are intentionally left untouched.
 
 ROOT = Path('app/src/main/kotlin/com/mythara')
 
@@ -21,7 +21,6 @@ def replace_in(rel, pairs):
         p.write_text(s)
         print(f'[ko] {rel}')
 
-# ── Secret unlock dialog ────────────────────────────────────────────────
 replace_in('ui/secret/SecretUnlock.kt', [
     ('"set a secret password"', '"Secret 비밀번호 설정"'),
     ('"biometric unlock"', '"생체 인증으로 잠금 해제"'),
@@ -41,7 +40,6 @@ replace_in('ui/secret/SecretUnlock.kt', [
     ('Text("cancel", color = MytharaColors.FgMute)', 'Text("취소", color = MytharaColors.FgMute)'),
 ])
 
-# ── Dangerous/confirmation action dialog ───────────────────────────────
 replace_in('ui/chat/ConfirmationDialog.kt', [
     ('"always allow — stop treating this app as critical"', '"항상 허용 — 이 앱을 중요 앱 목록에서 제외"'),
     ('"always allow this"', '"이 작업 항상 허용"'),
@@ -49,7 +47,6 @@ replace_in('ui/chat/ConfirmationDialog.kt', [
     ('"${Glyph.Check} allow"', '"${Glyph.Check} 허용"'),
 ])
 
-# ── Task queue ─────────────────────────────────────────────────────────
 replace_in('ui/tasks/TasksScreen.kt', [
     ('"${Glyph.DiamondFilled} tasks"', '"${Glyph.DiamondFilled} 작업"'),
     ('"${pending.size} pending · ${terminal.size} done"', '"대기 ${pending.size}개 · 완료 ${terminal.size}개"'),
@@ -66,11 +63,8 @@ replace_in('ui/tasks/TasksScreen.kt', [
     ('"from ${task.requesterDeviceId.takeLast(6)}"', '"${task.requesterDeviceId.takeLast(6)}에서 요청"'),
     ('"claimed: ${task.claimedByDeviceId.takeLast(6)}"', '"처리 기기: ${task.claimedByDeviceId.takeLast(6)}"'),
     ('"${Glyph.Cross} cancel"', '"${Glyph.Cross} 취소"'),
-    ('"canceled by user"', '"사용자가 취소함"'),
-    ('"unknown"', '"알 수 없음"'),
 ])
 
-# ── Shizuku ────────────────────────────────────────────────────────────
 replace_in('ui/settings/ShizukuPanel.kt', [
     ('"${Glyph.DiamondOutline} shizuku — privileged shell shim for cosmetic system changes"',
      '"${Glyph.DiamondOutline} Shizuku — 시스템 설정 변경용 권한 브리지"'),
@@ -86,7 +80,6 @@ replace_in('ui/settings/ShizukuPanel.kt', [
      '"${Glyph.AccentBar} Shizuku 준비 완료. 이제 Mythara가 글자 크기, 다크 모드, 강조색, 제스처 내비게이션, 애니메이션 속도, 블루라이트 필터 등을 변경할 수 있습니다."'),
 ])
 
-# ── GitHub memory sync ─────────────────────────────────────────────────
 replace_in('ui/settings/MemorySyncPanel.kt', [
     ('PanelLocal("memory sync")', 'PanelLocal("메모리 동기화")'),
     ('"${Glyph.AccentBar} learnings + settings (and optionally chat) sync to your private GitHub repo so they survive device switches. nothing secret leaves the phone."',
@@ -111,7 +104,6 @@ replace_in('ui/settings/MemorySyncPanel.kt', [
     ('text = "last sync: ${java.text.SimpleDateFormat', 'text = "마지막 동기화: ${java.text.SimpleDateFormat'),
 ])
 
-# ── Termux setup ───────────────────────────────────────────────────────
 replace_in('ui/settings/TermuxSetupPanel.kt', [
     ('"exec threw"', '"실행 중 예외 발생"'),
     ('"Termux not installed — install from F-Droid."', '"Termux가 설치되지 않았습니다. F-Droid에서 설치하세요."'),
@@ -127,7 +119,6 @@ replace_in('ui/settings/TermuxSetupPanel.kt', [
     ('Text(if (running) "${Glyph.Ellipsis} verifying…" else "verify")', 'Text(if (running) "${Glyph.Ellipsis} 확인 중…" else "연결 확인")'),
 ])
 
-# ── Common Settings panels ─────────────────────────────────────────────
 replace_in('ui/settings/UserNamePanel.kt', [
     ('"e.g. Ankur, A, or just leave blank"', '"예: 홍길동, 길동 — 비워둬도 됩니다"'),
 ])
@@ -148,56 +139,18 @@ replace_in('ui/about/AboutMeScreen.kt', [
     ('"reading the vault…"', '"메모리 저장소를 읽는 중…"'),
     ('Panel("your big five")', 'Panel("나의 Big Five")'),
 ])
-
-# ── Common dialogs/sheets ──────────────────────────────────────────────
 replace_in('ui/secret/speaker/SpeakerEnrollmentDialog.kt', [
     ('"${Glyph.Cross} stop"', '"${Glyph.Cross} 중지"'),
 ])
-
-# ── Main Settings screen leftover common labels/actions ────────────────
 replace_in('ui/settings/SettingsScreen.kt', [
     ('"remove key"', '"키 삭제"'),
     ('"clear key"', '"키 삭제"'),
-    ('"validate"', '"확인"'),
-    ('"install voice"', '"음성 모델 설치"'),
-    ('"download"', '"다운로드"'),
-    ('"enabled"', '"사용"'),
-    ('"disabled"', '"사용 안 함"'),
 ])
 
-# ── Generic safe replacements across UI Kotlin files ──────────────────
-# Restrict to exact quoted UI fragments; protocol names and internal enum values remain.
-generic = [
-    ('"cancel"', '"취소"'),
-    ('"close"', '"닫기"'),
-    ('"save"', '"저장"'),
-    ('"delete"', '"삭제"'),
-    ('"remove"', '"삭제"'),
-    ('"retry"', '"다시 시도"'),
-    ('"refresh"', '"새로고침"'),
-    ('"done"', '"완료"'),
-    ('"loading"', '"불러오는 중"'),
-    ('"settings"', '"설정"'),
-    ('"permissions"', '"권한"'),
-    ('"status"', '"상태"'),
-    ('"unknown"', '"알 수 없음"'),
-    ('"none"', '"없음"'),
-]
-for p in (ROOT / 'ui').rglob('*.kt'):
-    s = p.read_text()
-    before = s
-    for old, new in generic:
-        # Only exact standalone string literals; this avoids touching enum names,
-        # routes embedded in longer strings, or protocol payloads.
-        s = s.replace(old, new)
-    if s != before:
-        p.write_text(s)
-
-# App name remains clearly identifiable as local Korean edition.
 strings = Path('app/src/main/res/values/strings.xml')
 if strings.exists():
     s = strings.read_text()
     s = s.replace('<string name="app_name">Mythara 로컬</string>', '<string name="app_name">Mythara 로컬 KR</string>')
     strings.write_text(s)
 
-print('Mythara Local Fold7 KR v4 expanded Korean UI overlay applied')
+print('Mythara Local Fold7 KR v4 expanded Korean UI overlay applied safely')
