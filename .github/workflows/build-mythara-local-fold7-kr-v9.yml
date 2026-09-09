@@ -1,0 +1,118 @@
+name: Build Mythara Local Fold7 KR FCC v9 APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr-v9.yml'
+      - 'tools/mythara_local_v9_local_image_patch.py'
+      - 'tools/mythara_local_v9_compilefix_patch.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Apply established local Korean stack through v8
+        working-directory: mythara
+        run: |
+          python3 ../tools/mythara_local_patch.py
+          python3 ../tools/mythara_local_kr_patch.py
+          python3 ../tools/mythara_local_kr_full_v4_patch.py
+          python3 ../tools/mythara_local_fcc_v4_patch.py
+          python3 ../tools/mythara_local_v5_actionfix_patch.py
+          python3 ../tools/mythara_local_v5_compilefix_patch.py
+          python3 ../tools/mythara_local_v6_qwen_npu_patch.py
+          python3 ../tools/mythara_local_v7_hybrid_patch.py
+          python3 ../tools/mythara_local_v7_pollfix_patch.py
+          python3 ../tools/mythara_local_v7_compilefix_patch.py
+          python3 ../tools/mythara_local_v8_fix_patch.py
+
+      - name: Apply v9 local image generation
+        working-directory: mythara
+        run: |
+          python3 ../tools/mythara_local_v9_local_image_patch.py
+          python3 ../tools/mythara_local_v9_compilefix_patch.py
+
+      - name: Fix Compose experimental opt-ins
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build v9 APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Restore persistent signer
+        shell: bash
+        run: |
+          base64 -d tools/mythara-local-dev.jks.b64 > mythara-local-dev.jks
+          SIGN_PASS="$(grep -m1 -- '--ks-pass pass:' .github/workflows/build-mythara-local-fold7-kr-v8.yml | sed -E 's/.*--ks-pass pass:([^ ]+).*/\1/' | tr -d '\\')"
+          echo "SIGN_PASS=$SIGN_PASS" >> "$GITHUB_ENV"
+
+      - name: Sign stable-package APK
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks mythara-local-dev.jks \
+            --ks-key-alias mythara-local \
+            --ks-pass env:SIGN_PASS \
+            --key-pass env:SIGN_PASS \
+            --out Mythara-Local-Fold7-KR-FCC-v9.apk \
+            mythara/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs Mythara-Local-Fold7-KR-FCC-v9.apk
+          sha256sum Mythara-Local-Fold7-KR-FCC-v9.apk | tee Mythara-Local-Fold7-KR-FCC-v9.sha256
+          ls -lh Mythara-Local-Fold7-KR-FCC-v9.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-fcc-v9
+          name: Mythara Local Fold7 한국어 FCC v9
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어 FCC v9.
+            동일 패키지 com.mythara.localkr4와 기존 고정 서명을 유지하므로 v8 위에 업데이트 설치할 수 있습니다.
+            generate_image는 로컬 Stable Diffusion 1.5 + MediaPipe/OpenCL GPU를 기본 사용하며 Gemini API 키가 필요하지 않습니다.
+            최초 1회 약 2.1GB 로컬 모델 설치 후 오프라인 이미지 생성이 가능합니다. Gemini는 키가 있을 때만 선택적 폴백입니다.
+            Qwen NPU/FCC/ACE-Step 자동 연결/Shizuku/16KB page-size 호환 기능은 유지합니다.
+          files: |
+            Mythara-Local-Fold7-KR-FCC-v9.apk
+            Mythara-Local-Fold7-KR-FCC-v9.sha256
