@@ -1,0 +1,140 @@
+name: Build Mythara Local Fold7 KR v6 Qwen NPU APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mythara-local-fold7-kr-v6.yml'
+      - 'tools/mythara_local_patch.py'
+      - 'tools/mythara_local_kr_patch.py'
+      - 'tools/mythara_local_kr_full_v4_patch.py'
+      - 'tools/mythara_local_fcc_v4_patch.py'
+      - 'tools/mythara_local_v5_actionfix_patch.py'
+      - 'tools/mythara_local_v5_compilefix_patch.py'
+      - 'tools/mythara_local_v6_qwen_npu_patch.py'
+      - 'tools/mythara-local-dev.jks.b64'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout build host
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager 'platform-tools' 'platforms;android-36' 'build-tools;36.0.0'
+
+      - name: Fetch pinned Mythara source
+        run: |
+          git clone https://github.com/ankurCES/project_mythara.git mythara
+          cd mythara
+          git checkout c9778e2e7ef839a34829fb9b11aa3637b3e2105f
+
+      - name: Patch fully local Fold7 edition
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_patch.py
+
+      - name: Apply Korean UI overlay baseline
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_patch.py
+
+      - name: Expand Korean UI coverage
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_kr_full_v4_patch.py
+
+      - name: Apply FCC-Mobile orchestration
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_fcc_v4_patch.py
+
+      - name: Apply v5 action routing fixes
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_actionfix_patch.py
+
+      - name: Apply v5 Kotlin compile fix
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v5_compilefix_patch.py
+
+      - name: Apply v6 Qwen3-VL Snapdragon NPU patch
+        working-directory: mythara
+        run: python3 ../tools/mythara_local_v6_qwen_npu_patch.py
+
+      - name: Fix Compose experimental opt-ins
+        working-directory: mythara
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/build.gradle.kts')
+          s = p.read_text()
+          anchor = '            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi"'
+          extra = '            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"'
+          if extra not in s:
+              s = s.replace(anchor, anchor + ',\n' + extra)
+          p.write_text(s)
+          PY
+
+      - name: Build v6 APK
+        working-directory: mythara
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug --stacktrace
+
+      - name: Restore persistent signing key
+        run: |
+          base64 -d tools/mythara-local-dev.jks.b64 > mythara-local-dev.jks
+          keytool -list -keystore mythara-local-dev.jks -storepass mythara-local-dev -alias mythara-local >/dev/null
+
+      - name: Sign stable-package APK
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" sign \
+            --ks mythara-local-dev.jks \
+            --ks-key-alias mythara-local \
+            --ks-pass pass:mythara-local-dev \
+            --key-pass pass:mythara-local-dev \
+            --out Mythara-Local-Fold7-KR-FCC-v6-QwenNPU.apk \
+            mythara/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs Mythara-Local-Fold7-KR-FCC-v6-QwenNPU.apk
+          sha256sum Mythara-Local-Fold7-KR-FCC-v6-QwenNPU.apk | tee Mythara-Local-Fold7-KR-FCC-v6-QwenNPU.sha256
+          ls -lh Mythara-Local-Fold7-KR-FCC-v6-QwenNPU.apk
+
+      - name: Publish public download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mythara-local-fold7-kr-fcc-v6-qwen-npu
+          name: Mythara Local Fold7 한국어 FCC v6 · Qwen NPU
+          prerelease: false
+          make_latest: true
+          body: |
+            Galaxy Z Fold7용 Mythara Local 한국어 FCC-Mobile v6입니다.
+
+            - 고정 패키지: com.mythara.localkr4
+            - v5와 동일한 고정 서명: 삭제 없이 업데이트 설치
+            - 메인 AI: Qwen3-VL-4B-Instruct
+            - Qualcomm GenieX / QAIRT w4a16
+            - Snapdragon 8 Elite (SM8750) Hexagon NPU / HTP0 우선
+            - 설정에 Snapdragon AI 가속 패널 추가
+            - 모델은 Qualcomm AI Hub에서 기기용 자산을 별도 다운로드
+            - FCC Main / Worker / Reviewer / Debugger가 하나의 Qwen NPU 모델을 순차 공유
+            - 화면/사진 이해는 Qwen VLM NPU 우선
+            - Qwen 미설치/초기화 실패 시 기존 Gemma 4 E2B 자동 폴백
+            - v5의 색상 이름 변환, 이미지 생성 라우팅, 기능 목록 개선 유지
+
+            참고: 자유 대화는 현재 공식 Instruct 체크포인트의 프롬프트 완화만 사용합니다.
+            별도 uncensored 체크포인트는 SM8750 QAIRT 변환본을 검증한 뒤 선택 모델로 추가할 예정입니다.
+          files: |
+            Mythara-Local-Fold7-KR-FCC-v6-QwenNPU.apk
+            Mythara-Local-Fold7-KR-FCC-v6-QwenNPU.sha256
