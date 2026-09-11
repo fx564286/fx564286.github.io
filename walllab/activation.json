@@ -1,7 +1,7 @@
 {
   "enabled": true,
-  "configVersion": 2,
+  "configVersion": 3,
   "minVersionCode": 2,
   "passSha256": "87bc21a3f79134eee4302fa9176ab15a3715bda414dd46970077ec8641755af8",
-  "signature": "MEQCIGiSCJ1PjL4GNA6lctZtbv5lbM/v8cNhiBFpEMZzfkhlAiB/JandiruLwUMHeGZAJZI3oU2FbcZ/p6SSgkCMSoIdWA=="
+  "signature": "MEUCIBoZ8IhGivjDZMxQ3TFKGKj9acF1d1bFm2MlrzNibvdBAiEAtU8ghyqMhwYIvyeDd1MOZ3PAq2UeM1HydnOzL0EReuU="
 }
