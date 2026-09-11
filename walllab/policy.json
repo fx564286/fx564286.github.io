@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "revision": 1,
+  "phrase_sha256": "22fd3069cf667a45d6924742b4afefb5cf3d28c6956f6ba28699ecab761a2b85",
+  "min_version_code": 1,
+  "recheck_seconds": 60,
+  "message": "WallLab sample policy active"
+}
