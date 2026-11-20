@@ -1,0 +1,18 @@
+# UI5-009 — 다중 몬스터 방치 사냥 및 캐릭터 전신 검사
+- Date: 2026-11-20
+- Task ID: UI5-009
+- Owner: 5번 UI/UX
+- Status: 독립 웹 UI 시연 완료 / 실제 코어·최종 아트 통합 미완료
+- 변경 대상: GitHub Pages 'game-uiux-section5-preview/index.html' (5번 UI 소유의 독립 시연 경로)
+- 웹 링크: https://fx564286.github.io/game-uiux-section5-preview/?build=ui5-009
+- 편집 가능한 Figma 시안: https://www.figma.com/design/sSZUpkGW3FOrujOn2hM7qx
+- 새 인터페이스: 시연 한정 'character' 화면, 'battle' 네비게이션, 확대 토글, mock pack/wave/targetCount/damageTotal. 기존 GameTransport 계약 요청 타입은 불변.
+- 이전 결함: 단일 플레이어 대 단일 몬스터 결투, 희박한 전투 연출, 장비 외형 검사용 별도 화면 없음.
+- 개선 내용: 동시에 최대 7개 몬스터 시각 표시. 기본 3대상·스킬 5대상 광역 피해를 한 틱의 집계 값으로 표시. 시연용 두 웨이브 및 보상 결과. 캐릭터 전신 확대(165%), 장비 슬롯별 현재 착용 정보를 상태 스냅샷에서 렌더. 메뉴 이동 중에도 자동 사냥 모의 상태 진행.
+- 데이터 경계: 시연용 PACK_SIZE=7, 공격 피해/스킬/적HP/웨이브는 UI 픽스처이며 최종 스폰 정책·스킬 성능·확정 스테이지 규칙이 아님.
+- 시각 자산: 임시 수작업 SVG. 실제 캐릭터 디자인, 장비별 프리팹/스킨, 탈것/펫 모델을 대체하지 않음. 아트 부재로 장착 동작은 차단하지 않음.
+- 검증 RED: 이전 빌드에서 .swarm-field .mob-unit = 0, character nav = 0. acceptance test exit code 1.
+- 검증 GREEN: node --check 통과; Chromium 390x844, 320x720, 1365x840에서 7개 monster actor, 전신 inspector 및 165% 확대, 사냥 pause/resume, script errors 0, horizontal overflow 없음. Playwright full sequence: 메뉴 이동 중 auto state 전진, 2 wave 클리어, mock reward 4 fissureIron + 2 scrap. Public HTTP 200 / SHA-256 local HTML match. URL 자체 Chromium 검증 완료.
+- 다른 섹션에 대한 영향: 1번 Core(공식 전투 상태·데미지 집계 인터페이스), 3번 Balance(파밍·피해량), 7번 Art(최종 모델/장착 비주얼/프레임맵), 8번 Data(몬스터·스킬·장비 계약). 각 섹션의 실제 진행 상황은 **미확인**.
+- 차단된 의존성: 공식 엔진/전투 API 미확인, 직업/장비 메타데이터 및 확정 아트 미확인, 스킬 VFX·캐릭터 스프라이트 아틀라스 미확인.
+- 다음 작업: 공식 아트(정면/측면/후면·무기/방어구 레이어)와 렌더링 계약 확인 후 inspector 시연용 SVG 교체. DPS/공격 이벤트 집계 Core 연동. 프로파일링으로 저사양 모바일 드로우콜과 메모리 예산 검증.
