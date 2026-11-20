@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c1926">
+<meta name="description" content="ECLIPSE RPG 단일 세로 화면 UI5-012 — 독립 목업, 실제 엔진 미연결">
+<title>ECLIPSE RPG | 단일 화면 UI 시연</title>
+<style>/* UI5-012 | One-screen portrait idle RPG view adapter. Simulation is visual fixture only. */
+:root{
+ --bg:#080e17;--deep:#0c1825;--surface:#142633;--raised:#192e3d;--line:#2e4857;
+ --accent:#e4c58a;--teal:#8fe5d8;--green:#8ccdb5;--text:#e8f0f1;--sub:#b4c5ce;
+ --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;
+ --f-xs:11px;--f-sm:12px;--f-base:14px;--f-lg:16px;--f-xl:20px;--f-title:25px;
+ --button-height:44px;--radius:12px;--font: 'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{font:500 var(--f-base)/1.5 var(--font);color:var(--text);background:radial-gradient(circle at 50% 13%,#263a47 0,transparent 42%),#060b12;}
+button,select,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.game-viewport{width:min(100%,540px);height:100vh;height:100dvh;min-height:420px;margin:auto;display:flex;flex-direction:column;border-inline:1px solid #32434e;background:linear-gradient(180deg,#132736 0%,#0c1723 45%,#0a1420 100%);box-shadow:0 8px 75px #000a;overflow:hidden}
+.currency-bar{height:58px;min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:var(--s2);padding:0 var(--s4);border-bottom:1px solid var(--line);background:#0c1926;}
+.logo-stack{min-width:0;display:flex;align-items:center;gap:var(--s2)}
+.logo-emblem{width:31px;height:31px;border:1px solid #9f916e;border-radius:8px;display:grid;place-items:center;color:var(--accent);font-size:17px;flex:none}
+.logo-name{display:block;font-weight:800;letter-spacing:.12em;font-size:var(--f-sm);line-height:1.15;white-space:nowrap}
+.logo-sub{display:block;color:var(--sub);font-size:var(--f-xs);line-height:1.2;margin-top:3px;white-space:nowrap}
+.currency-only{display:flex;gap:var(--s2);align-items:center;font-variant-numeric:tabular-nums}
+.currency-chip{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #4b5145;border-radius:9px;background:#202c31;white-space:nowrap;font-size:var(--f-sm);color:#f0deae;min-height:36px;}
+.coin-symbol{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;border:2px solid #dbbd7e;color:#f0d7a1;font-size:var(--f-xs);font-weight:800}
+.demo-chip{font-size:var(--f-xs);font-weight:750;line-height:1.3;padding:6px 9px;background:#223b42;border:1px solid #45646b;border-radius:8px;color:#91cfce;letter-spacing:.03em;white-space:nowrap}
+.battle-wrap{height:clamp(284px,40dvh,348px);flex-shrink:0;padding:var(--s3) var(--s3) var(--s2);border-bottom:1px solid #3c5661;background:linear-gradient(180deg,#183544,#152734 82%,#0f1e2b)}
+.battle-titlebar{display:flex;align-items:center;justify-content:space-between;gap:8px;height:32px;margin:0 1px var(--s2);}
+.stage-copy{min-width:0;display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.stage-copy strong{font-size:var(--f-base);font-weight:800;letter-spacing:-.025em}
+.stage-copy small{color:#9dbac8;font-size:var(--f-xs);font-weight:700;white-space:nowrap}
+.auto-indicator{display:flex;align-items:center;gap:6px;color:#9ae2c8;font-size:var(--f-xs);font-weight:800;white-space:nowrap}
+.auto-indicator i{width:7px;height:7px;border-radius:50%;background:#75d3ad;box-shadow:0 0 9px #4cd7a7;display:block;animation:ping 2s infinite;}
+.arena{height:calc(100% - 82px);min-height:175px;position:relative;overflow:hidden;border:1px solid #506979;border-radius:12px;background:radial-gradient(ellipse at 82% 22%,#5d767a60,transparent 45%),linear-gradient(180deg,#264554 0%,#2b4452 52%,#0d2331 100%);}
+.arena::before{content:"";position:absolute;inset:0 0 23%;background:linear-gradient(148deg,transparent 35%,#1d3b49 35.4% 61%,transparent 61.4%),linear-gradient(208deg,transparent 45%,#18323f 45.4% 64%,transparent 64.4%);opacity:.72}
+.arena::after{content:"";position:absolute;bottom:-28%;left:-10%;width:120%;height:50%;border-radius:50%;background:repeating-linear-gradient(175deg,transparent 0 35px,#5c9c9f16 36px 37px),radial-gradient(ellipse at 50% 0,#37646b77,transparent 66%),#102535;border-top:1px solid #55777d55}
+.arena-head{position:absolute;top:8px;left:9px;right:9px;z-index:13;display:flex;justify-content:space-between;align-items:flex-start;gap:7px;pointer-events:none}
+.arena-unit-name{font-size:11px;color:#e5e4d9;border:1px solid #52707d;background:#122b3bcc;border-radius:7px;padding:5px 7px;max-width:46%}
+.arena-unit-name strong{display:block;font-size:12px;color:#fbf3db;font-weight:800}
+.arena-unit-name small{display:block;font-size:11px;color:#a8d9d0}
+.arena-unit-name.right{text-align:right}
+.hero-unit{position:absolute;bottom:5%;left:1%;width:35%;height:78%;z-index:8;pointer-events:none;filter:drop-shadow(0 12px 7px #000a)}
+.hero-unit svg{display:block;width:100%;height:100%;object-fit:contain;animation:idle 2.2s ease-in-out infinite;transform-origin:50% 80%}
+.hero-shadow{position:absolute;left:4%;bottom:7%;width:34%;height:8px;background:#0008;filter:blur(6px);border-radius:50%;z-index:7}
+.mob-lane{position:absolute;inset:0;z-index:6;pointer-events:none}
+.mob{position:absolute;top:var(--lane);left:var(--start);width:17%;height:35%;max-width:95px;max-height:110px;z-index:var(--depth);filter:drop-shadow(0 5px 4px #000a);animation:march var(--travel) linear var(--delay) infinite;will-change:left}
+.mob svg{width:100%;height:100%;filter:hue-rotate(var(--color-hue));animation:idle 1.75s ease-in-out infinite;transform-origin:50% 78%}
+.mob .mob-health{position:absolute;top:5%;left:16%;width:68%;height:4px;border-radius:4px;background:#263945;overflow:hidden;}
+.mob .mob-health span{display:block;width:var(--hp);height:100%;background:#db8575;transition:width .2s}
+.mob.hit svg{filter:brightness(1.65) hue-rotate(var(--color-hue))}
+.mob.fallen{opacity:.28}
+.mob.hit .mob-health span{background:#e7c08a}
+.impact-text{position:absolute;z-index:14;pointer-events:none;color:#f1d29c;text-shadow:0 0 14px #df9959;font-size:19px;font-weight:900;animation:float 700ms ease-out forwards}
+.arena-wave{position:absolute;left:50%;bottom:10px;z-index:15;transform:translateX(-50%);border:1px solid #75858a;background:#0d1f2bcc;border-radius:30px;padding:4px 10px;color:#d5e3e1;font-size:11px;white-space:nowrap;font-weight:650}
+.battle-status{height:34px;display:grid;grid-template-columns:1fr auto;gap:var(--s3);align-items:center;padding:var(--s2) var(--s1) 0;font-size:11px;color:#b2c7cb}
+.status-hp{display:flex;align-items:center;gap:8px;min-width:0}
+.hp-track{flex:1;height:7px;min-width:36px;overflow:hidden;border-radius:8px;background:#4a4148;border:1px solid #6c6260}
+.hp-fill{height:100%;width:100%;background:linear-gradient(90deg,#56aa96,#96e1c1);transition:width .2s}
+.kill-counter{white-space:nowrap;font-variant-numeric:tabular-nums;color:#ecd4a0;font-weight:700}
+.build-panel{min-height:0;flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,#0f1d29 0%,#0a1521 100%)}
+.build-heading{min-height:49px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 var(--s4);gap:var(--s2)}
+.build-heading strong{font-size:var(--f-base);font-weight:800;letter-spacing:-.02em}
+.build-heading span{font-size:var(--f-xs);color:#9db0b9}
+.build-tabs{height:48px;min-height:48px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:0 var(--s3) 4px;border-bottom:1px solid #304a57;}
+.tab-btn{border:0;color:#aabfca;background:transparent;border-radius:9px 9px 0 0;font-size:12px;letter-spacing:-.025em;font-weight:750;display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+.tab-btn.active{background:#244451;color:#f3e0b4;border-bottom:2px solid var(--accent)}
+.tab-btn:focus-visible{outline-offset:-2px}
+.build-content{padding:var(--s4);min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#435a61 #10202b}
+.panel-content{animation:show 160ms ease}
+.section-caption{display:flex;justify-content:space-between;align-items:center;gap:var(--s2);margin-bottom:var(--s3)}
+.section-caption strong{font-size:16px;font-weight:800}
+.section-caption small{font-size:11px;color:var(--sub)}
+.points-badge{font-size:12px;border:1px solid #777356;border-radius:8px;background:#32372f;color:#f8dba0;padding:6px 9px;white-space:nowrap}
+.points-badge b{font-size:15px;font-variant-numeric:tabular-nums}
+.stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s2)}
+.stat-card{border:1px solid #36515d;background:#172d3a;border-radius:var(--radius);padding:var(--s3);min-width:0}
+.stat-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s1)}
+.stat-name{font-weight:750;font-size:12px;color:#aacbd1;letter-spacing:.025em}
+.stat-value{font-size:23px;line-height:1.1;font-weight:850;font-variant-numeric:tabular-nums;color:#f4f7f5}
+.stat-note{font-size:11px;color:#a9bec6;line-height:1.45;margin:var(--s2) 0}
+.stat-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s2)}
+.action-btn{height:var(--button-height);min-height:var(--button-height);font-size:13px;font-weight:800;line-height:20px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #57717b;border-radius:10px;background:#243b49;color:#e2eff1;text-align:center;padding:0 var(--s3);}
+.action-btn.primary{background:#d8bc83;color:#192531;border-color:#ddc691}
+.action-btn.active{border-color:#d6bb81;background:#383f35;color:#f6d5a2}
+.action-btn.tiny{height:32px;min-height:32px;width:100%;padding:0;font-size:15px}
+.settings-line{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);border:1px solid #314e5b;background:#142b38;border-radius:12px;padding:var(--s3);margin-top:var(--s3);}
+.settings-line strong{display:block;font-size:13px}
+.settings-line small{display:block;color:var(--sub);font-size:11px;line-height:1.45;margin-top:4px}
+.settings-line label{font-size:12px;color:var(--sub)}
+.settings-line select{background:#243d4b;color:#f0e0be;border:1px solid #5e767b;padding:7px;border-radius:8px;min-height:44px}
+.switch{display:flex;align-items:center;justify-content:center;min-width:72px;height:44px;padding:0 10px;border:1px solid #59767b;background:#223543;color:#e2f2ef;border-radius:10px;font-weight:750;font-size:12px;}
+.switch[aria-checked="true"]{background:#335548;border-color:#78b69b;color:#b4f5d0}
+.callout{margin:var(--s3) 0 0;padding:var(--s3);border-left:2px solid #ad9a68;border-radius:4px;background:#292d30;font-size:12px;color:#d7d6c7;line-height:1.55}
+.skill-row,.equip-row,.companion-row{display:flex;gap:var(--s3);align-items:center;border:1px solid #344e5d;background:#152a38;border-radius:var(--radius);padding:var(--s3);margin-bottom:var(--s2);min-height:72px}
+.skill-symbol,.slot-symbol{width:42px;height:42px;min-width:42px;border-radius:10px;background:radial-gradient(circle at 40% 30%,#4c6b6b,#263742);border:1px solid #66766d;color:#e6cea0;display:grid;place-items:center;font-size:20px}
+.skill-info,.gear-info,.companion-info{flex:1;min-width:0}
+.skill-info strong,.gear-info strong,.companion-info strong{display:block;font-size:13px;font-weight:800}
+.skill-info small,.gear-info small,.companion-info small{display:block;color:var(--sub);font-size:12px;line-height:1.45;margin-top:3px}
+.skill-row .switch{flex-shrink:0}
+.equipment-hint{font-size:12px;color:#d1d1c1;margin-bottom:var(--s3)}
+.gear-level{border:1px solid #5a6f76;background:#1c343e;color:#c9dedf;padding:5px 8px;border-radius:7px;font-size:11px;white-space:nowrap}
+.companion-row.locked{opacity:.8}
+.panel-note{font-size:12px;line-height:1.5;color:var(--sub);margin:var(--s3) 0}
+.preview-select{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);border:1px solid #344e5d;border-radius:12px;background:#1a3240;padding:10px 12px;margin-bottom:var(--s3)}
+.preview-select label{font-size:12px;color:#d9e3e4}
+.preview-select select{font-size:13px;color:#f0ddaf;background:#273f4c;border:1px solid #61737b;border-radius:8px;height:44px;min-width:95px}
+.footer-note{color:#8ea3ac;font-size:11px;line-height:1.5;padding:var(--s3) var(--s4);border-top:1px solid #253d49;flex:none;display:flex;align-items:center;justify-content:space-between;gap:var(--s3);min-height:44px}
+.footer-note span:last-child{color:#bdc2ba}
+@keyframes march{0%{left:115%}100%{left:38%}}
+@keyframes idle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.01)}}
+@keyframes float{0%{opacity:0;transform:translateY(10px) scale(.8)}22%{opacity:1;transform:translateY(-7px)}100%{opacity:0;transform:translateY(-48px)}}
+@keyframes ping{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes show{from{opacity:.55;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:360px){
+ .currency-bar{padding-inline:var(--s3)}
+ .logo-name{font-size:11px}
+ .logo-sub{font-size:10px}
+ .currency-chip{padding:7px}
+ .demo-chip{padding:5px;font-size:10px}
+ .battle-wrap{height:clamp(288px,40dvh,328px);padding:var(--s2)}
+ .arena-head{left:6px;right:6px;top:6px}
+ .arena-unit-name{padding:5px;font-size:10px}
+ .arena-unit-name strong{font-size:11px}
+ .arena-unit-name small{font-size:10px}
+ .build-content{padding:var(--s3)}
+ .stat-card{padding:var(--s2)}
+ .tab-btn{font-size:11px}
+ .footer-note{font-size:10px;padding:var(--s2) var(--s3)}
+ .hero-unit{width:38%;left:-2%}
+ .mob{width:19%}
+}
+@media(min-width:768px){
+ .game-viewport{border-radius:18px;margin-block:14px;height:calc(100dvh - 28px);max-height:960px;}
+ .battle-wrap{height:355px;}
+ .arena{height:calc(100% - 82px)}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{transition:none!important}
+ .hero-unit svg,.mob svg,.auto-indicator i,.panel-content{animation:none!important}
+ /* direction visually preserved via accessible motion toggle only in full-motion setting */
+ .mob{animation:none!important;left:var(--static-pos,70%)}
+}
+
+/* Original SVG classes restored in the new standalone shell, otherwise armor/sword fall back to black fill. */
+.fighter-svg .f-armor{fill:#487c85;stroke:#9bc7c3;stroke-width:2;stroke-linejoin:round}
+.fighter-svg .f-trim{stroke:#e3c583;stroke-width:3;fill:none;stroke-linecap:round}
+.fighter-svg .f-cape{fill:#20384a}
+.fighter-svg .f-glow{fill:#79d6ce;filter:drop-shadow(0 0 8px rgba(106,230,230,.75))}
+.fighter-svg .f-blade{fill:#d7edf1;stroke:#8bdae3;stroke-width:3}
+.gear-heavy .fighter-svg .f-armor{fill:#63716c;stroke:#b7d2a4}
+.blade-upgrade .fighter-svg .f-blade{fill:#f1d59c;stroke:#ffba60;stroke-width:5}
+.skill-tree-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
+.skill-tree-node{display:grid;grid-template-columns:minmax(0,1fr) 56px;align-items:center;gap:12px;border:1px solid #344e5d;background:#152a38;border-radius:12px;padding:10px 12px;min-height:68px}
+.skill-tree-node strong{font-size:13px;display:block}
+.skill-tree-node small{display:block;font-size:12px;color:var(--sub);line-height:1.45;margin-top:3px}
+.skill-tree-node .action-btn{width:56px;min-width:56px;padding:0}
+.skill-tree-node .action-btn[aria-pressed="true"]{background:#335548;border-color:#82a791;color:#c9f1dc}
+</style>
+</head>
+<body>
+<main class="game-viewport" data-ui="single-screen" aria-label="ECLIPSE RPG 단일 화면 자동 전투 UI">
+  <header class="currency-bar">
+    <div class="logo-stack">
+      <span class="logo-emblem" aria-hidden="true">◇</span>
+      <div><span class="logo-name">ECLIPSE RPG</span><span class="logo-sub">ONE-SCREEN IDLE</span></div>
+    </div>
+    <div class="currency-only" data-ui="currency" aria-label="재화">
+      <span class="currency-chip" aria-label="시연용 골드 1,240"><span class="coin-symbol" aria-hidden="true">G</span><b>1,240</b></span>
+      <span class="demo-chip">MOCK UI</span>
+    </div>
+  </header>
+  <section class="battle-wrap" aria-label="상단 자동 전투 영역">
+    <div class="battle-titlebar">
+      <div class="stage-copy"><strong>균열 초입</strong><small>STAGE 001 · 시연</small></div>
+      <span class="auto-indicator"><i aria-hidden="true"></i>자동 전투</span>
+    </div>
+    <div class="arena" data-ui="battle-arena" role="group" aria-label="왼쪽 개척자와 오른쪽에서 왼쪽으로 이동하는 다수 몬스터의 자동 사냥 장면">
+      <div class="arena-head">
+        <div class="arena-unit-name"><strong>개척자 · LV.12</strong><small data-ui="battle-power">전투력 150 · 시연</small></div>
+        <div class="arena-unit-name right"><strong>적 다수 등장</strong><small data-ui="arena-status">자동 공격 진행 중</small></div>
+      </div>
+      <div class="hero-shadow" aria-hidden="true"></div>
+      <div class="hero-unit" id="hero-art" aria-label="캐릭터 임시 스프라이트"></div>
+      <div class="mob-lane" id="mob-lane" aria-label="몬스터 생성 및 우측에서 좌측 이동하는 장면"></div>
+      <div id="battle-effects" aria-hidden="true"></div>
+      <span class="arena-wave">전투 연출 · 다수 대상</span>
+    </div>
+    <div class="battle-status">
+      <div class="status-hp"><b>HP</b><div class="hp-track" role="progressbar" aria-label="캐릭터 체력" aria-valuemin="0" aria-valuemax="120" aria-valuenow="120"><div class="hp-fill" id="hero-hp-fill"></div></div><span id="hero-hp-text">120/120</span></div>
+      <div class="kill-counter">처치 <span id="kill-count">0</span> · 예시 수치</div>
+    </div>
+  </section>
+  <section class="build-panel" data-ui="build-panel" aria-label="하단 성장 및 자동화 설정">
+    <div class="build-heading"><strong>캐릭터 성장 설정</strong><span>전투 중에도 설정 가능</span></div>
+    <div class="build-tabs" role="tablist" aria-label="성장 설정 분류">
+      <button type="button" class="tab-btn active" role="tab" data-tab="stats" aria-selected="true" aria-controls="settings-content">능력치</button>
+      <button type="button" class="tab-btn" role="tab" data-tab="skills" aria-selected="false" aria-controls="settings-content">자동 스킬</button>
+      <button type="button" class="tab-btn" role="tab" data-tab="equipment" aria-selected="false" aria-controls="settings-content">장비</button>
+      <button type="button" class="tab-btn" role="tab" data-tab="companions" aria-selected="false" aria-controls="settings-content">동료</button>
+    </div>
+    <div class="build-content" id="settings-content" role="tabpanel" tabindex="0"></div>
+  </section>
+  <footer class="footer-note"><span>UI5-012 · 단일 화면 시연</span><span>게임 엔진·저장 미연결</span></footer>
+</main>
+<script>const FIGHTER_SVG = [
+'<svg class="fighter-svg" viewBox="0 0 260 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="청록빛 갑옷을 착용한 개척자 캐릭터">',
+'<defs><linearGradient id="f-cloth" x2="1" y2="1"><stop stop-color="#486b73"/><stop offset="1" stop-color="#102532"/></linearGradient><linearGradient id="f-iron" x2="1" y2="1"><stop stop-color="#e5f4e6"/><stop offset=".35" stop-color="#92bbc0"/><stop offset="1" stop-color="#2c5766"/></linearGradient><linearGradient id="f-hood" x2=".9" y2="1"><stop stop-color="#425766"/><stop offset="1" stop-color="#101c2c"/></linearGradient></defs>',
+'<ellipse cx="130" cy="310" rx="83" ry="11" fill="#061a21" opacity=".75"/>',
+'<path class="f-cape" d="M86 108 Q45 145 28 275 L51 303 L90 283 L131 310 L185 282 L218 296 Q209 157 167 109Z"/><path d="M89 139 L56 287 L101 272 L133 303 L152 159Z" fill="#3c6972" opacity=".55"/>',
+'<path d="M97 222 L81 294 L110 304 L129 235Z M143 232 L154 308 L187 291 L172 220Z" fill="#2c4652" stroke="#73949b" stroke-width="5"/>',
+'<path d="M76 289 L66 314 L110 317 L116 298Z M149 299 L150 317 L200 316 L182 286Z" fill="#223541" stroke="#92acaa" stroke-width="3"/>',
+'<path d="M80 119 Q125 93 180 123 L194 203 L163 248 L94 248 L65 193Z" fill="url(#f-cloth)" stroke="#7b9c96" stroke-width="4"/>',
+'<path class="f-armor" d="M96 135 Q128 125 164 134 L175 189 L150 218 L105 215 L82 189Z"/><path d="M128 136 V211 M94 165 L128 188 L164 164" class="f-trim"/>',
+'<path d="M80 119 Q48 125 48 156 L76 172 L104 138Z M170 128 Q198 127 212 158 L184 181 L155 143Z" fill="url(#f-iron)" stroke="#c7d8bd" stroke-width="3"/>',
+'<path d="M60 156 L42 213 L68 228 L91 180Z M196 167 L218 226 L194 239 L175 190Z" fill="#365764" stroke="#9bc3bf" stroke-width="4"/>',
+'<path d="M65 209 L58 244 L85 252 L95 225Z M194 217 L180 245 L203 255 L225 235Z" fill="url(#f-iron)" stroke="#cee6d9" stroke-width="2"/>',
+'<path d="M100 55 Q126 23 155 50 L180 103 L162 137 L91 131 L74 99Z" fill="url(#f-hood)" stroke="#6f9899" stroke-width="4"/>',
+'<path d="M97 91 Q128 58 161 91 L153 127 Q126 145 102 121Z" fill="#142633"/><path d="M109 102 L124 106 M136 107 L149 102" stroke="#8de5d8" stroke-width="5" stroke-linecap="round" filter="drop-shadow(0 0 6px #45b7bd)"/>',
+'<path d="M98 119 L127 147 L156 119" fill="none" stroke="#d1ba7d" stroke-width="5"/><circle class="f-glow" cx="129" cy="166" r="7"/>',
+'<path d="M213 233 L236 174 L243 180 L224 240Z" fill="#354752"/><path class="f-blade" d="M218 232 L241 45 L251 23 L252 57 L231 237Z"/><path d="M203 230 L246 240 L244 248 L200 239Z" fill="#d5b36b"/><path d="M217 242 L212 278 L221 280 L228 244Z" fill="#5e4a32" stroke="#d5b36b" stroke-width="2"/>',
+'<path d="M76 245 L102 236" stroke="#d0d6bc" stroke-width="4"/>',
+'</svg>'
+].join('');
+const BEAST_SVG = [
+'<svg class="beast-svg" viewBox="0 0 260 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="뿔과 발톱이 있는 균열 야수">',
+'<defs><linearGradient id="b-rock" x2="1" y2="1"><stop stop-color="#889494"/><stop offset=".55" stop-color="#405764"/><stop offset="1" stop-color="#142730"/></linearGradient><radialGradient id="b-core"><stop stop-color="#fdf2c5"/><stop offset=".45" stop-color="#a2f0df"/><stop offset="1" stop-color="#1e7689"/></radialGradient></defs>',
+'<ellipse cx="127" cy="302" rx="92" ry="13" fill="#000" opacity=".47"/>',
+'<path d="M86 179 L42 242 L31 306 L72 309 L99 239Z M177 176 L218 245 L237 311 L195 307 L152 230Z" fill="url(#b-rock)" stroke="#9cb2b0" stroke-width="5"/>',
+'<path d="M81 200 L61 290 L98 309 L117 219Z M152 217 L171 308 L212 295 L195 199Z" fill="#3b5360" stroke="#afc5b8" stroke-width="4"/>',
+'<path d="M52 289 L33 318 L66 309 L80 320 L89 294 M180 300 L171 319 L201 309 L229 318 L217 287" fill="#c1d1c4" stroke="#728e8d" stroke-width="3"/>',
+'<path d="M70 173 Q55 116 84 86 L113 65 L155 70 Q210 111 190 179 L173 242 L87 238Z" fill="url(#b-rock)" stroke="#a6b4b1" stroke-width="5"/>',
+'<path d="M90 100 L67 35 L102 56 L122 89 M156 94 L187 28 L204 65 L184 119" fill="#667d86" stroke="#b5c9be" stroke-width="5"/>',
+'<path d="M92 114 Q124 86 169 115 L184 168 L162 207 L115 224 L81 183Z" fill="#243e48" stroke="#9abbb1" stroke-width="4"/>',
+'<path d="M101 154 L119 166 L140 149 L165 163 L142 179 L109 178Z" fill="#91f1df" filter="drop-shadow(0 0 12px #6df3df)"/>',
+'<path d="M93 190 L121 204 L169 184 L153 215 L123 229 L105 218Z" fill="#121c26" stroke="#b7ccbf" stroke-width="3"/>',
+'<path d="M100 193 L109 208 L121 198 L131 218 L143 196 L156 208 L167 186" fill="none" stroke="#eff2ce" stroke-width="4"/>',
+'<path d="M104 69 L130 21 L147 71 M48 140 L24 117 L67 99 M191 144 L231 118 L200 101" fill="#7d9b9b" stroke="#b5c8bb" stroke-width="4"/>',
+'<path d="M102 233 L124 256 L153 239 L163 260 L124 288 L91 259Z" fill="#284651" stroke="#789b96" stroke-width="4"/>',
+'<circle cx="127" cy="247" r="18" fill="url(#b-core)" filter="drop-shadow(0 0 20px #83e5d7)"/><path d="M124 231 L134 245 L126 267 L117 249Z" fill="#e6faf0"/>',
+'</svg>'
+].join('');
+
+// UI5-012: presentation-only mock feed. No authoritative combat/economy/persistence.
+'use strict';
+const statDefinitions=Object.freeze([
+  {id:'str',name:'힘',abbr:'STR',detail:'물리 공격력 · 시연'},
+  {id:'agi',name:'민첩',abbr:'AGI',detail:'공격 속도 · 시연'},
+  {id:'vit',name:'체력',abbr:'VIT',detail:'생존력 · 시연'},
+  {id:'int',name:'지능',abbr:'INT',detail:'기술 효율 · 시연'},
+]);
+const initial=()=>({
+  level:12, points:6, stats:{str:12,agi:9,vit:10,int:8},spent:{str:0,agi:0,vit:0,int:0},
+  skills:{basic:true,whirl:true,wave:true},potionAuto:true,potionThreshold:35,potions:2,
+  previewLevel:12,kills:0,hp:120,fixturePower:150,treePoints:2,tree:{blade:false,element:false,sustain:false},
+});
+let mock=initial();
+let tab='stats';
+let seq=0;
+const panel=document.querySelector('#settings-content');
+const lane=document.querySelector('#mob-lane');
+const esc=(str)=>String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const unitArt=(raw,i)=>raw.replaceAll('id="b-','id="b'+i+'-').replaceAll('url(#b-','url(#b'+i+'-');
+document.querySelector('#hero-art').innerHTML=FIGHTER_SVG;
+const mobs=Array.from({length:7},(_,i)=>{
+  const el=document.createElement('div');
+  el.className='mob';
+  el.dataset.mob=String(i);
+  el.style.setProperty('--lane',[18,53,34,62,22,49,35][i]+'%');
+  el.style.setProperty('--depth',String([5,7,9,4,8,10,6][i]));
+  el.style.setProperty('--delay',(-1.4-i*1.1)+'s');
+  el.style.setProperty('--travel','9.5s');
+  el.style.setProperty('--color-hue',(i%3*22)+'deg');
+  el.style.setProperty('--hp','100%');
+  el.style.setProperty('--static-pos',(58+i*5)+'%');
+  el.innerHTML='<span class="mob-health"><span></span></span>'+unitArt(BEAST_SVG,i);
+  el.querySelector('svg')?.setAttribute('aria-hidden','true');
+  lane.append(el);
+  return {el,hp:100};
+});
+function power(){
+  return mock.fixturePower+Object.values(mock.spent).reduce((a,b)=>a+b,0)*5;
+}
+function renderStats(){
+ const cards=statDefinitions.map(s=>{
+  const allocated=mock.spent[s.id];
+  return '<article class="stat-card">'+
+    '<div class="stat-head"><span class="stat-name">'+s.name+' '+s.abbr+'</span><strong class="stat-value" data-stat-value="'+s.id+'">'+mock.stats[s.id]+'</strong></div>'+
+    '<p class="stat-note">'+s.detail+'</p>'+
+    '<div class="stat-actions"><button type="button" class="action-btn" data-ui="stat-decrease" data-stat="'+s.id+'" aria-label="'+s.name+' 1 감소" '+(allocated===0?'disabled':'')+'>−</button>'+
+      '<button type="button" class="action-btn primary" data-ui="stat-increase" data-stat="'+s.id+'" aria-label="'+s.name+' 1 증가" '+(mock.points===0?'disabled':'')+'>+</button></div>'+
+    '</article>';
+ }).join('');
+ return '<div class="panel-content"><div class="section-caption"><strong>능력치 분배</strong><span class="points-badge">남은 포인트 <b data-ui="points">'+mock.points+'</b></span></div>'+
+   '<div class="stat-grid">'+cards+'</div>'+
+   '<div class="settings-line"><div><strong>조건부 자동 포션</strong><small>체력이 설정값 이하일 때 자동 사용 · 시연 전용</small></div>'+
+    '<button type="button" class="switch" role="switch" data-ui="potion-auto" aria-checked="'+mock.potionAuto+'">'+(mock.potionAuto?'ON':'OFF')+'</button></div>'+
+   '<div class="settings-line"><div><strong>자동 회복 기준</strong><small>보유 포션 '+mock.potions+'개 · 아이템함 연동 전</small></div>'+
+    '<label>HP <select data-ui="potion-threshold" aria-label="포션 발동 체력 비율">'+[25,35,50].map(x=>'<option value="'+x+'" '+(x===mock.potionThreshold?'selected':'')+'>'+x+'% 이하</option>').join('')+'</select></label></div>'+
+   '<p class="callout">모의 데이터입니다. 능력치 배분·자동 포션 조건은 화면 조작을 검증하기 위한 로컬 상태이며 서버에 저장되지 않습니다.</p></div>';
+}
+const skills=[
+  {id:'basic',icon:'✦',title:'기본 자동 스킬',desc:'캐릭터 고유 기본 기술 · 항상 자동'},
+  {id:'whirl',icon:'✧',title:'회전 베기',desc:'범위 피해 · 시연용 기술'},
+  {id:'wave',icon:'◇',title:'균열 파동',desc:'다중 대상 공격 · 시연용 기술'}
+];
+const skillTree=[
+ {id:'blade',name:'근접 강화 경로',note:'자동 공격 중심 · 예시'},
+ {id:'element',name:'속성 연구 경로',note:'속성 기술 확장 · 예시'},
+ {id:'sustain',name:'생존 지원 경로',note:'방어·회복 보조 · 예시'},
+];
+function renderSkillTree(){
+ return '<div class="section-caption" style="margin-top:22px"><strong>스킬트리 구성 예시</strong><span class="points-badge">시연 포인트 <b data-ui="tree-points">'+mock.treePoints+'</b></span></div>'+
+ '<div class="skill-tree-grid">'+skillTree.map(x=>'<div class="skill-tree-node"><div><strong>'+x.name+'</strong><small>'+x.note+'</small></div>'+
+ '<button type="button" class="action-btn" data-ui="tree-node" data-tree="'+x.id+'" aria-pressed="'+mock.tree[x.id]+'" '+(!mock.tree[x.id]&&mock.treePoints===0?'disabled':'')+'>'+ (mock.tree[x.id]?'해제':'선택')+'</button></div>').join('')+'</div>';
+}
+function renderSkills(){
+ return '<div class="panel-content"><div class="section-caption"><strong>자동 스킬 구성</strong><small>전투 입력 없이 설정만 변경</small></div>'+
+ skills.map(s=>'<article class="skill-row">'+
+  '<span class="skill-symbol" aria-hidden="true">'+s.icon+'</span><div class="skill-info"><strong>'+s.title+'</strong><small>'+s.desc+'</small></div>'+
+  '<button type="button" data-ui="skill-switch" data-skill="'+s.id+'" class="switch" role="switch" aria-label="'+s.title+' 자동 사용" aria-checked="'+mock.skills[s.id]+'" '+(s.id==='basic'?'disabled':'')+'>'+
+   (mock.skills[s.id]?'ON':'OFF')+'</button></article>').join('')+
+ renderSkillTree()+'<p class="callout">스킬트리 경로·개별 기술·쿨다운·속성은 확정되지 않았습니다. 전부 로컬 UI 조작 예시입니다.</p></div>';
+}
+const equipment=[
+ ['weapon','무기','⌁','기본 검 · 임시 외형','장착 예시'],
+ ['offhand','보조무기','◈','빈 슬롯','미장착'],
+ ['head','투구','♢','빈 슬롯','미장착'],
+ ['chest','갑옷','⬡','기본 경갑 · 임시 외형','장착 예시'],
+ ['hands','장갑','✧','빈 슬롯','미장착'],
+ ['feet','신발','⋄','빈 슬롯','미장착'],
+];
+function renderEquipment(){
+ return '<div class="panel-content"><div class="section-caption"><strong>장비 외형·능력치</strong><small>총 6부위 · 슬롯 명칭 예시</small></div>'+
+  '<p class="equipment-hint">정식 장비 스키마가 미제출되어 아래 명칭·외형은 임시입니다.</p>'+
+  equipment.map(x=>'<article class="equip-row" data-ui="equipment-slot"><span class="slot-symbol" aria-hidden="true">'+x[2]+'</span>'+
+  '<div class="gear-info"><strong>'+x[1]+'</strong><small>'+x[3]+'</small></div><span class="gear-level">'+x[4]+'</span></article>').join('')+
+  '<p class="callout">장비 장착·강화·진화 및 외형 변경은 공식 게임 코어/아트 계약이 필요합니다. 현재 UI는 6부위 정보 구조만 시연합니다.</p></div>';
+}
+function renderCompanions(){
+ const specs=[
+ {title:'첫째 펫',level:15,icon:'✦',kind:'pet-slot',desc:'강화·진화 / 속성 / 자동 보조 · 예정'},
+ {title:'둘째 펫',level:40,icon:'✧',kind:'pet-slot',desc:'강화·진화 / 자동 보조 · 예정'},
+ {title:'탈것',level:25,icon:'♘',kind:'mount-slot',desc:'이동/외형 시연 · 예정'},
+ ];
+ return '<div class="panel-content"><div class="section-caption"><strong>펫·탈것 장착</strong><small>레벨 조건은 제안안</small></div>'+
+  '<div class="preview-select"><label for="demo-level">시연 레벨 변경</label><select id="demo-level" data-ui="preview-level">'+[12,15,25,40].map(l=>'<option value="'+l+'" '+(mock.previewLevel===l?'selected':'')+'>LV.'+l+'</option>').join('')+'</select></div>'+
+  specs.map(s=>{
+   const unlock=mock.previewLevel>=s.level;
+   return '<article class="companion-row '+(!unlock?'locked':'')+'" data-ui="'+s.kind+'"><span class="slot-symbol" aria-hidden="true">'+s.icon+'</span>'+
+    '<div class="companion-info"><strong>'+s.title+'</strong><small>'+s.desc+'</small></div>'+
+    '<span class="gear-level">'+(unlock?'조건 충족':'Lv.'+s.level+' 잠금')+'</span></article>';
+  }).join('')+
+  '<p class="callout">펫 2마리 조건(Lv.15 / Lv.40)·탈것(Lv.25)은 중앙 원장의 제안안입니다. 이 화면의 레벨 변경은 시각적 상태 확인용이며 실제 레벨 상승이 아닙니다.</p></div>';
+}
+const pages={stats:renderStats,skills:renderSkills,equipment:renderEquipment,companions:renderCompanions};
+function renderPanel(){
+ panel.innerHTML=pages[tab]();
+ document.querySelectorAll('.tab-btn').forEach(el=>{
+  const active=el.dataset.tab===tab;el.classList.toggle('active',active);el.setAttribute('aria-selected',active?'true':'false');
+ });
+ document.querySelector('[data-ui="battle-power"]').textContent='전투력 '+power()+' · 시연';
+}
+function changeTab(next){
+ if(!pages[next])return;
+ tab=next;renderPanel();panel.scrollTop=0;
+}
+document.addEventListener('click',event=>{
+ const el=event.target.closest('button');
+ if(!el)return;
+ if(el.dataset.tab){changeTab(el.dataset.tab);return;}
+ const ui=el.dataset.ui;
+ const key=el.dataset.stat;
+ if(ui==='stat-increase'&&key in mock.stats&&mock.points>0){
+   mock.stats[key]++;mock.spent[key]++;mock.points--;renderPanel();
+ }else if(ui==='stat-decrease'&&key in mock.stats&&mock.spent[key]>0){
+   mock.stats[key]--;mock.spent[key]--;mock.points++;renderPanel();
+ }else if(ui==='potion-auto'){
+   mock.potionAuto=!mock.potionAuto;renderPanel();
+ }else if(ui==='skill-switch'){
+   const id=el.dataset.skill;
+   if(id in mock.skills&&id!=='basic'){mock.skills[id]=!mock.skills[id];renderPanel();}
+ }else if(ui==='tree-node'){
+   const id=el.dataset.tree;
+   if(!(id in mock.tree))return;
+   if(mock.tree[id]){mock.tree[id]=false;mock.treePoints++;renderPanel();}
+   else if(mock.treePoints>0){mock.tree[id]=true;mock.treePoints--;renderPanel();}
+ }
+});
+document.addEventListener('change',event=>{
+ const el=event.target;if(!(el instanceof HTMLSelectElement))return;
+ if(el.dataset.ui==='potion-threshold'){mock.potionThreshold=Number(el.value);renderPanel();}
+ else if(el.dataset.ui==='preview-level'){mock.previewLevel=Number(el.value);renderPanel();}
+});
+function visualTick(){
+ if(document.visibilityState==='hidden')return;
+ seq++;
+ const m=mobs[seq%mobs.length];
+ const hit=(seq%3===0?42:27);
+ m.hp-=hit;
+ m.el.classList.add('hit');
+ m.el.style.setProperty('--hp',Math.max(0,m.hp)+'%');
+ const rect=m.el.getBoundingClientRect(),arena=document.querySelector('.arena').getBoundingClientRect();
+ if(rect.right>arena.left&&rect.left<arena.right){
+  const effect=document.createElement('span');effect.className='impact-text';effect.textContent='-'+hit;
+  effect.style.left=Math.max(145,Math.min(arena.width-65,rect.left-arena.left+rect.width*.42))+'px';
+  effect.style.top=Math.max(44,Math.min(arena.height-45,rect.top-arena.top))+'px';
+  const effects=document.getElementById('battle-effects');
+  effects.querySelectorAll('.impact-text').forEach(e=>e.remove());
+  effects.append(effect);
+  setTimeout(()=>effect.remove(),720);
+ }
+ setTimeout(()=>m.el.classList.remove('hit'),280);
+ if(m.hp<=0){
+  mock.kills++;
+  document.querySelector('#kill-count').textContent=mock.kills;
+  m.el.classList.add('fallen');
+  setTimeout(()=>{m.hp=100;m.el.style.setProperty('--hp','100%');m.el.classList.remove('fallen');},600);
+ }
+ if(seq%6===0){
+  mock.hp=Math.max(12,mock.hp-12);
+  if(mock.potionAuto&&mock.potions>0&&mock.hp<=120*mock.potionThreshold/100){
+   mock.hp=Math.min(120,mock.hp+48);mock.potions--;
+   if(tab==='stats')renderPanel();
+  }
+  const hpTrack=document.querySelector('.hp-track');
+  hpTrack.setAttribute('aria-valuenow',String(mock.hp));
+  document.querySelector('#hero-hp-fill').style.width=(mock.hp/120*100)+'%';
+  document.querySelector('#hero-hp-text').textContent=mock.hp+'/120';
+ }
+}
+renderPanel();
+const timer=setInterval(visualTick,1050);
+window.__UI5_ONE_SCREEN__=Object.freeze({
+ getState:()=>JSON.parse(JSON.stringify(mock)),
+ getTab:()=>tab,
+ stop:()=>clearInterval(timer),
+ version:'UI5-012',
+ simulated:true,
+});
+</script>
+</body></html>
