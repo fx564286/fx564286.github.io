@@ -1,0 +1,35 @@
+'use strict';
+// Contract regression: visual redesign must not change the mock economy/command boundary.
+const {chromium}=require('playwright-core'),assert=require('node:assert/strict');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+const previewURL=process.env.UI5_PREVIEW_URL||pathToFileURL(path.resolve(__dirname,'../index.html')).href;
+const chromePath=process.env.UI5_CHROME_PATH;
+const launchOpts={headless:true,args:['--no-sandbox']};
+if(chromePath)launchOpts.executablePath=chromePath;
+(async()=>{
+ const browser=await chromium.launch({headless:true,...launchOpts});
+ const page=await browser.newPage({viewport:{width:390,height:844}});
+ const errs=[];page.on('pageerror',e=>errs.push(e.message));
+ await page.goto(previewURL);await page.locator('.swarm-field').waitFor();
+ await page.locator('.nav-button[data-id="forge"]').click();
+ const craft=page.locator('[data-action="craft"][data-id="R01"]');
+ assert.equal(await craft.isEnabled(),true,'R01 craft available');
+ await craft.click();
+ await page.waitForFunction(()=>window.__UI5_PROTOTYPE__.snapshot().state.inventory.some(x=>x.recipeId==='R01'),null,{timeout:4500});
+ await page.locator('.nav-button[data-id="inventory"]').click();
+ const equip=page.locator('.inventory-card [data-action="equip"]:not([disabled])');
+ assert.equal(await equip.count(),1,'newly crafted item can be equipped');
+ await equip.click();
+ await page.waitForFunction(()=>window.__UI5_PROTOTYPE__.snapshot().state.equipment.weapon!=='E000',null,{timeout:4500});
+ await page.locator('.nav-button[data-id="character"]').click();
+ assert.equal(await page.locator('.inspector-stage.blade-upgrade').count(),1,'gear visual projection reflects equipped weapon');
+ const state=await page.evaluate(()=>window.__UI5_PROTOTYPE__.snapshot());
+ assert.equal(state.state.inventory.length,2,'mock inventory contains two items');
+ assert.equal(state.state.wallet.fissureIron,2,'craft cost deducted once');
+ assert.equal(state.state.wallet.scrap,2,'common materials deducted once');
+ assert.equal(state.state.equipment.weapon,'E001','weapon equipment ID');
+ assert.deepEqual(errs,[],'no JS errors');
+ console.log('PASS craft -> equip -> character projection; wallet, instance and command boundary preserved');
+ await browser.close();
+})().catch(e=>{console.error(e.stack||e);process.exitCode=1});
