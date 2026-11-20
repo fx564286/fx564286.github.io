@@ -14,13 +14,13 @@ const executablePath=process.env.UI5_CHROME_PATH||'/root/.cache/ms-playwright/ch
  await page.goto(url,{waitUntil:'load'});
  await page.locator('[data-ui="single-screen"]').waitFor();
  const stable=await page.evaluate(()=>{
-   window.__baseline={arena:document.querySelector('.arena'),hero:document.querySelector('#hero-art svg'),
+   window.__baseline={arena:document.querySelector('.arena'),hero:document.querySelector('#hero-art img'),
      mobs:[...document.querySelectorAll('.mob')],y:document.querySelector('.arena').getBoundingClientRect().top};
    return window.__baseline.mobs.length;
  });
  assert.equal(stable,7,'visual swarm built exactly 7');
- const armor=await page.locator('.fighter-svg .f-armor').first().evaluate(x=>getComputedStyle(x).fill);
- assert.notEqual(armor,'rgb(0, 0, 0)','hero armor must not render black');
+ const hero=await page.locator('#hero-art img').first().evaluate(x=>({loaded:x.complete&&x.naturalWidth>800,format:x.currentSrc.slice(0,22)}));
+ assert(hero.loaded && hero.format.startsWith('data:image/webp;'),'replaced hero art loads');
  assert.equal(await page.locator('[data-ui="currency"] .currency-chip').count(),1,'only supported sample gold in currency header');
  // Stats: + then -, reversible without losing points
  await page.locator('[data-ui="stat-increase"][data-stat="str"]').click();
@@ -60,7 +60,7 @@ const executablePath=process.env.UI5_CHROME_PATH||'/root/.cache/ms-playwright/ch
    const old=window.__baseline,scene=document.querySelector('.arena');
    const buttons=[...document.querySelectorAll('button')].filter(e=>e.getClientRects().length&&!e.disabled&&e.classList.contains('action-btn'));
    return{
-    stable:scene===old.arena && document.querySelector('#hero-art svg')===old.hero &&
+    stable:scene===old.arena && document.querySelector('#hero-art img')===old.hero &&
       old.mobs.every((m,i)=>document.querySelectorAll('.mob')[i]===m),
     sceneY:scene.getBoundingClientRect().top,oldY:old.y,
     overflow:document.documentElement.scrollWidth>innerWidth+1,
