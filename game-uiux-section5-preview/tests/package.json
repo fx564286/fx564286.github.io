@@ -1,17 +1,19 @@
 {
   "name": "ui5-preview-regression-tests",
   "private": true,
-  "version": "0.7.0",
+  "version": "0.8.0",
   "type": "commonjs",
   "scripts": {
-    "test": "npm run test:visual && npm run test:flow && npm run test:craft && npm run test:render && npm run test:single && npm run test:single:a11y && npm run test:character",
+    "test": "npm run test:visual && npm run test:flow && npm run test:craft && npm run test:render && npm run test:single && npm run test:single:a11y && npm run test:character && npm run test:port && npm run test:port:safety",
     "test:visual": "node ui5-011-visual-consistency.cjs",
     "test:flow": "node ui5-011-full-flow.cjs",
     "test:craft": "node ui5-011-crafting-regression.cjs",
     "test:render": "node ui5-010-render-stability.cjs",
     "test:single": "node ui5-012-one-screen.cjs",
     "test:single:a11y": "node ui5-012-state-and-a11y.cjs",
-    "test:character": "node ui5-013-character-art.cjs"
+    "test:character": "node ui5-013-character-art.cjs",
+    "test:port": "node ui6-014-integration-port.cjs",
+    "test:port:safety": "node ui6-014-rejection-restore.cjs"
   },
   "devDependencies": {
     "playwright-core": "1.65.1"
