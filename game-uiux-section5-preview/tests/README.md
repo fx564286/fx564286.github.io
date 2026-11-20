@@ -35,3 +35,23 @@ The tests are grouped by concern:
 - `test:render`: preservation of combat scene and navigation DOM identity between automatic combat ticks.
 
 Scope: independent HTML/CSS/JS prototype. This suite does not certify Safari on iPhone, official engine performance, production APIs, or gameplay balance.
+
+## UI5-012 — One-screen portrait UI (new)
+
+The new one-screen preview is `../one-screen.html`, which is kept separate from `../index.html` until the central section approves integration.
+
+```bash
+# Run the single-screen UI tests locally
+npm run test:single
+npm run test:single:a11y
+
+# Run the same tests against the public preview
+export UI5_PREVIEW_URL="https://fx564286.github.io/game-uiux-section5-preview/one-screen.html?build=ui5-012"
+npm run test:single
+npm run test:single:a11y
+```
+
+- `test:single`: checks battle above settings, seven enemy DOM units, actual right-to-left X motion, stat allocation, three automatic skill toggles, six equipment slots, two pet slots, mount slot, potion control, 44px controls, and 320/390/768/1365px layouts.
+- `test:single:a11y`: checks reversible stat points, mock skill-tree paths, potion threshold, pet/mount unlock proposal preview, persistent battle DOM during settings changes, pinned combat scene when lower panel scrolls, original sprite armor colors, JavaScript errors, and reduced-motion accessibility.
+
+A browser passing these visual tests does not establish actual combat-core, engine, network, Android, Safari or gameplay validation. The demo gold, stats, skill tree, equipment labels, enemy damage, and companion availability are non-authoritative visual fixtures.
