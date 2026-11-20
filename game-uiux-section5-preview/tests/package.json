@@ -1,14 +1,16 @@
 {
   "name": "ui5-preview-regression-tests",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.6.0",
   "type": "commonjs",
   "scripts": {
-    "test": "npm run test:visual && npm run test:flow && npm run test:craft && npm run test:render",
+    "test": "npm run test:visual && npm run test:flow && npm run test:craft && npm run test:render && npm run test:single && npm run test:single:a11y",
     "test:visual": "node ui5-011-visual-consistency.cjs",
     "test:flow": "node ui5-011-full-flow.cjs",
     "test:craft": "node ui5-011-crafting-regression.cjs",
-    "test:render": "node ui5-010-render-stability.cjs"
+    "test:render": "node ui5-010-render-stability.cjs",
+    "test:single": "node ui5-012-one-screen.cjs",
+    "test:single:a11y": "node ui5-012-state-and-a11y.cjs"
   },
   "devDependencies": {
     "playwright-core": "1.65.1"
