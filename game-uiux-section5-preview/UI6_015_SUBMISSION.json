@@ -1,0 +1,99 @@
+{
+  "submission_id": "ECL_UI6_015_PENDING_INTAKE",
+  "task_id": "UI6-015",
+  "section_id": "06",
+  "chat_alias": "05",
+  "ownership_status": "PENDING_01_DECISION",
+  "approval_owner": "01",
+  "code_repo": "fx564286/fx564286.github.io",
+  "repo_role": "UI_ONLY_PREVIEW_NOT_OFFICIAL_GAME_ENGINE_REPO",
+  "status": "CODE_VERIFIED_BROWSER_VERIFIED_NOT_STAGED_NOT_GAME_INTEGRATED_ANDROID_UNVERIFIED",
+  "changes": [
+    {
+      "path": "game-uiux-section5-preview/ui6-runtime-adapter.js",
+      "sha256": "16064c5323aa198a5bb6856e0da704d1c576b1bdd47ecdbf66248a993f24899c",
+      "bytes": 13607,
+      "commit": "65ab9b3183d48c98cd011cd646bfc6bfa61e84e5"
+    },
+    {
+      "path": "game-uiux-section5-preview/tests/ui6-015-command-lifecycle.cjs",
+      "sha256": "27d98de6a305c63b90ed60419888d73900f3a8d5aa139e12382c4f63317942cd",
+      "bytes": 4520,
+      "commit": "26e52aa3adaa54de3553c6753b7920dd04c84961"
+    },
+    {
+      "path": "game-uiux-section5-preview/tests/package.json",
+      "commit": "afa369c2814d0e6f8d8999d6744397a6630d349"
+    },
+    {
+      "path": "game-uiux-section5-preview/UI6_015_RELEASE.md",
+      "commit": "653c8c0689980ed6c82258505c949c0b1872df52"
+    }
+  ],
+  "provides": [
+    {
+      "contract": "ui6.view",
+      "version": "0.1-proposal",
+      "approved": false
+    },
+    {
+      "contract": "ui6.command",
+      "version": "0.1-proposal",
+      "approved": false
+    }
+  ],
+  "consumes": [
+    {
+      "contract": "core.combat_event_feed",
+      "version": "0.2",
+      "mapping_verified": false
+    },
+    {
+      "contract": "core.auto_battle",
+      "version": "0.1",
+      "mapping_verified": false
+    },
+    {
+      "contract": "equipment.visual",
+      "version": "not_finalized",
+      "mapping_verified": false
+    }
+  ],
+  "tested": {
+    "reproduction": [
+      "RED-A: new run pending stale dispatch kept controls disabled; exit 1",
+      "RED-B: same-run revision incorrectly unlocked pending command; exit 1"
+    ],
+    "local": [
+      "node --check ui6-runtime-adapter.js PASS",
+      "node tests/ui6-015-command-lifecycle.cjs PASS",
+      "node tests/ui6-014-integration-port.cjs PASS (3 widths)",
+      "node tests/ui6-014-rejection-restore.cjs PASS",
+      "node tests/ui5-012-one-screen.cjs PASS",
+      "node tests/ui5-012-state-and-a11y.cjs PASS",
+      "node tests/ui5-013-character-art.cjs PASS"
+    ],
+    "public": [
+      "UI6_URL=.../one-screen.html?mode=integration&build=ui6-015 node tests/ui6-015-command-lifecycle.cjs PASS",
+      "same UI6_URL node tests/ui6-014-integration-port.cjs PASS",
+      "same UI6_URL node tests/ui6-014-rejection-restore.cjs PASS"
+    ],
+    "public_http_status": 200,
+    "deployed_asset_sha256_match": true,
+    "all_invoked_tests_exit_code": 0,
+    "coverage": "NOT_MEASURED",
+    "android": "NOT_RUN",
+    "game_core_live": "NOT_CONNECTED"
+  },
+  "blocking_dependencies": [
+    "01 official section ownership decision",
+    "01 actual Core event and command ACK schemas",
+    "common game repo and client build entrypoint not confirmed",
+    "09 command timeout and idempotence rules",
+    "07 official rig and 6 piece gear",
+    "08 canonical equipment IDs",
+    "02 Android same-build integration acceptance"
+  ],
+  "next_work": "01 defines run/revision ACK contract and common runtime source; implement genuine Core event mapper and 02 cross-section QA",
+  "central_space_parent": "https://chatgpt.com/space/page_75f14346be3c8191b352923ebb201371"
+}
