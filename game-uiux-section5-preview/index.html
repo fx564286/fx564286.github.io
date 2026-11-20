@@ -269,6 +269,74 @@ h3 { font-size: 15px; letter-spacing: -.03em; margin: 0; }
 @media (max-width:800px) { .mobile-settings { display:grid; } }
 @media (max-width:560px) { .topbar .avatar { display:none; } }
 
+
+/* UI5-008: Visible, responsive 2D characters and battle scene (visual mock only) */
+.hero { min-height:375px; }
+.hero-content { position:relative; z-index:2; max-width:min(58%,580px); }
+.hero-character { position:absolute; right:3%; bottom:-12px; width:min(38%,295px); height:345px; z-index:1; pointer-events:none; filter:drop-shadow(0 15px 24px #000a); }
+.hero-character::before,.loadout-portrait::before {content:""; position:absolute; inset:12% -9%; border-radius:50%; background:radial-gradient(ellipse,rgba(80,174,187,.22),transparent 70%);}
+.fighter-svg,.beast-svg { display:block; position:relative; width:100%; height:100%; overflow:visible; filter:drop-shadow(0 16px 8px rgba(0,0,0,.48)); }
+.fighter-svg .f-armor {fill:#487c85;stroke:#9bc7c3;stroke-width:2;stroke-linejoin:round;}
+.fighter-svg .f-trim {stroke:#e3c583;stroke-width:3;fill:none;stroke-linecap:round;}
+.fighter-svg .f-cape {fill:#20384a;}
+.fighter-svg .f-glow {fill:#79d6ce;filter:drop-shadow(0 0 8px rgba(106,230,230,.75));}
+.fighter-svg .f-blade {fill:#d7edf1;stroke:#8bdae3;stroke-width:3;}
+.gear-heavy .fighter-svg .f-armor {fill:#63716c;stroke:#b7d2a4;}
+.blade-upgrade .fighter-svg .f-blade {fill:#f1d59c;stroke:#ffba60;stroke-width:5;}
+.loadout-portrait { height:285px; margin:8px auto 17px; width:min(100%,270px); position:relative; background:radial-gradient(ellipse at 50% 60%,#27434c,transparent 70%); }
+.loadout-label {text-align:center; color:#bfc9d1; font-size:11px; letter-spacing:.08em; margin-bottom:12px;}
+.arena-visual { --scene:#4caeac; position:relative; height:clamp(260px,38vw,365px); margin:14px 0 16px; overflow:hidden; border-radius:14px; border:1px solid rgba(145,185,176,.3); background:linear-gradient(180deg,rgba(8,17,31,.1) 0%,rgba(8,16,24,.4) 64%,rgba(10,20,24,.94) 100%),radial-gradient(ellipse at 51% 25%,rgba(153,206,183,.31),transparent 43%),linear-gradient(130deg,#1a3442,#31434b 49%,#17232f); isolation:isolate; }
+.arena-visual.env-bog { --scene:#8ac596; background:linear-gradient(180deg,#182e32 0%,#2b4340 62%,#0b181c 100%); }
+.arena-visual.env-forge { --scene:#f3a263; background:linear-gradient(180deg,#422c38 0%,#523330 57%,#1d1520 100%); }
+.arena-visual.env-ruins { --scene:#b3a6db; background:linear-gradient(180deg,#242740 0%,#3e3b53 57%,#151523 100%); }
+.arena-visual.env-stars { --scene:#79bee5; background:linear-gradient(180deg,#141e3b 0%,#334365 57%,#0c1225 100%); }
+.arena-visual.env-abyss { --scene:#e0a0fa; background:linear-gradient(180deg,#201831 0%,#362948 57%,#120d1d 100%); }
+.arena-visual::before {content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 22%,var(--scene),transparent 9%),repeating-linear-gradient(110deg,transparent 0 73px,rgba(255,255,255,.018) 73px 74px);opacity:.45;z-index:-1;}
+.arena-mountains {position:absolute;bottom:19%;left:-7%;width:115%;height:52%;background:linear-gradient(165deg,#071721,rgba(17,31,42,.4));clip-path:polygon(0 72%,13% 34%,23% 57%,37% 14%,51% 65%,68% 25%,79% 54%,92% 14%,100% 53%,100% 100%,0 100%);opacity:.56;}
+.arena-floor {position:absolute;bottom:-21%;left:-18%;width:136%;height:48%;background:radial-gradient(ellipse at 49% 5%,rgba(132,176,165,.24),transparent 57%),repeating-linear-gradient(170deg,transparent 0 42px,rgba(93,181,181,.09) 43px 44px),#0a1720;border-radius:50% 50% 0 0;box-shadow:0 -6px 27px #07151b;}
+.arena-floor::after {content:"";position:absolute;top:12%;left:15%;width:65%;height:36%;border:2px solid color-mix(in srgb,var(--scene),transparent 64%);border-radius:50%;box-shadow:0 0 38px color-mix(in srgb,var(--scene),transparent 70%);}
+.arena-actor {position:absolute;bottom:10%;height:75%;width:35%;min-width:130px;max-width:280px;display:flex;align-items:flex-end;justify-content:center;z-index:3;transition:filter .18s;}
+.arena-actor.player-actor {left:8%;}
+.arena-actor.monster-actor {right:8%;}
+.arena-actor > svg {height:100%;width:100%;}
+.arena-shadow {position:absolute;bottom:5%;height:19px;width:24%;background:rgba(0,0,0,.55);filter:blur(9px);border-radius:50%;z-index:2;}
+.arena-shadow.player-shadow {left:14%;}.arena-shadow.monster-shadow {right:14%;}
+.arena-caption {position:absolute;z-index:5;top:13px;display:flex;flex-direction:column;gap:5px;min-width:120px;max-width:37%;font-size:10px;color:#edf5ed;}
+.arena-caption.left {left:13px;}.arena-caption.right {right:13px;text-align:right;}
+.arena-caption strong {font-size:12px;text-shadow:0 1px 3px #000;}
+.arena-caption .healthbar {height:8px;border-radius:4px;}
+.arena-center {position:absolute;left:50%;top:13px;transform:translateX(-50%);z-index:5;border:1px solid #8e917a;color:#e8d6a7;background:#10222ecb;padding:7px 11px;border-radius:50px;font-size:10px;white-space:nowrap;letter-spacing:.06em;}
+.arena-effect {position:absolute;z-index:7;pointer-events:none;left:54%;top:42%;color:#ffe4a8;font-size:29px;font-weight:900;text-shadow:0 0 15px #ffaf68,0 2px 6px #000;animation:float-damage .78s ease-out forwards;}
+.arena-effect.heal {left:24%;color:#a0f5c5;text-shadow:0 0 12px #6cbf91;}
+.arena-effect.slash {width:140px;height:80px;top:39%;left:50%;border-top:8px solid #f5dd9a;transform:rotate(-35deg);border-radius:50%;filter:drop-shadow(0 0 12px #f6d49f);animation:slash-sweep .5s ease-out forwards;}
+.arena-visual.impact .player-actor {animation:hero-lunge .55s ease-out;}
+.arena-visual.impact .monster-actor {animation:enemy-hit .56s ease-out;}
+.arena-visual.impact-skill .player-actor {animation:hero-lunge .7s ease-out;}
+.arena-visual.impact-skill .monster-actor {animation:enemy-hit .65s ease-out;filter:drop-shadow(0 0 25px #f3c37c);}
+.arena-visual.counter .player-actor {animation:hero-hit .45s ease-out;}
+.arena-visual:not(.impact):not(.impact-skill) .player-actor svg {animation:idle-breathe 2.4s ease-in-out infinite;transform-origin:center 80%;}
+.arena-visual:not(.impact):not(.impact-skill) .monster-actor svg {animation:idle-breathe 2.8s ease-in-out infinite reverse;transform-origin:center 80%;}
+.battle-unit .arena-summary {display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:10px 0;font-size:11px;color:#9fd4cb;}
+.battle-actions .primary-button {padding:11px 15px;}
+.battle-actions .auto-status {font-size:11px;color:#aac4ce;line-height:1.6;margin:0 0 10px;}
+.battle-demo-tag {font-size:10px;color:#d0b98b;letter-spacing:.05em;}
+@keyframes hero-lunge {0%,100%{transform:translateX(0) rotate(0)}40%{transform:translateX(30%) rotate(6deg)}65%{transform:translateX(20%) rotate(-3deg)}}
+@keyframes enemy-hit {0%,100%{transform:translateX(0)}40%{transform:translateX(13px) rotate(5deg);filter:brightness(1.8)}75%{transform:translateX(-8px)}}
+@keyframes hero-hit {0%,100%{transform:translateX(0)}40%{transform:translateX(-12px);filter:brightness(1.6)}}
+@keyframes idle-breathe {0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.018)}}
+@keyframes float-damage {0%{opacity:0;transform:translateY(15px) scale(.75)}28%{opacity:1;transform:translateY(-2px) scale(1.15)}100%{opacity:0;transform:translateY(-56px) scale(.95)}}
+@keyframes slash-sweep {0%{opacity:0;transform:rotate(-55deg) scale(.4)}35%{opacity:1;transform:rotate(-32deg) scale(1.1)}100%{opacity:0;transform:rotate(-18deg) scale(1.4)}}
+@media (max-width:800px) {.hero-character {right:-4%;width:42%;}.hero-content {max-width:63%;}.arena-actor.player-actor{left:4%;}.arena-actor.monster-actor{right:4%;}}
+@media (max-width:560px) {.hero{min-height:465px;padding:24px 21px;}.hero-content{max-width:100%;}.hero h2{font-size:25px;max-width:75%;}.hero p{max-width:75%;font-size:11px;line-height:1.65;}.hero-character{height:234px;width:185px;right:-13px;bottom:-4px;opacity:.97;}.hero-footer{position:relative;z-index:5;max-width:82%;}.hero-footer button{font-size:11px;padding:11px;}.arena-visual{height:275px;margin:10px 0;}.arena-actor{height:66%;width:45%;min-width:105px;}.arena-actor.player-actor{left:0;}.arena-actor.monster-actor{right:0;}.arena-shadow.player-shadow{left:3%}.arena-shadow.monster-shadow{right:3%}.arena-caption{top:7px;max-width:44%;min-width:0;font-size:9px;}.arena-caption strong{font-size:10px;}.arena-caption.left{left:7px}.arena-caption.right{right:7px}.arena-center{top:42px;font-size:9px;padding:5px 7px;}.arena-effect{font-size:23px;}.battle-view{min-height:665px;}.battle-actions h3{display:block;font-size:13px;margin-bottom:6px;}.loadout-portrait{height:236px;}}
+@media (prefers-reduced-motion:reduce) {.arena-visual .arena-actor,.arena-visual .arena-actor svg,.arena-effect{animation:none!important;}}
+
+
+.env-bog .monster-actor {filter:hue-rotate(42deg) saturate(1.2);}
+.env-forge .monster-actor {filter:hue-rotate(-97deg) saturate(1.3);}
+.env-ruins .monster-actor {filter:hue-rotate(112deg) saturate(.85);}
+.env-stars .monster-actor {filter:hue-rotate(165deg) saturate(1.15);}
+.env-abyss .monster-actor {filter:hue-rotate(193deg) saturate(1.4);}
+
 </style>
 </head>
 <body>
@@ -707,12 +775,74 @@ function sectionRow(title,sub,actionLabel,action) {
   return `<div class="section-row"><div><h2>${safe(title)}</h2>${sub ? `<p>${safe(sub)}</p>` : ''}</div>${actionLabel ? `<button type="button" class="text-button" data-action="${action}">${safe(actionLabel)} ${icon('arrow')}</button>` : ''}</div>`;
 }
 
+
+/* Original temporary vector actors for visual UI verification; not final character art. */
+const FIGHTER_SVG = [
+'<svg class="fighter-svg" viewBox="0 0 260 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="청록빛 갑옷을 착용한 개척자 캐릭터">',
+'<defs><linearGradient id="f-cloth" x2="1" y2="1"><stop stop-color="#486b73"/><stop offset="1" stop-color="#102532"/></linearGradient><linearGradient id="f-iron" x2="1" y2="1"><stop stop-color="#e5f4e6"/><stop offset=".35" stop-color="#92bbc0"/><stop offset="1" stop-color="#2c5766"/></linearGradient><linearGradient id="f-hood" x2=".9" y2="1"><stop stop-color="#425766"/><stop offset="1" stop-color="#101c2c"/></linearGradient></defs>',
+'<ellipse cx="130" cy="310" rx="83" ry="11" fill="#061a21" opacity=".75"/>',
+'<path class="f-cape" d="M86 108 Q45 145 28 275 L51 303 L90 283 L131 310 L185 282 L218 296 Q209 157 167 109Z"/><path d="M89 139 L56 287 L101 272 L133 303 L152 159Z" fill="#3c6972" opacity=".55"/>',
+'<path d="M97 222 L81 294 L110 304 L129 235Z M143 232 L154 308 L187 291 L172 220Z" fill="#2c4652" stroke="#73949b" stroke-width="5"/>',
+'<path d="M76 289 L66 314 L110 317 L116 298Z M149 299 L150 317 L200 316 L182 286Z" fill="#223541" stroke="#92acaa" stroke-width="3"/>',
+'<path d="M80 119 Q125 93 180 123 L194 203 L163 248 L94 248 L65 193Z" fill="url(#f-cloth)" stroke="#7b9c96" stroke-width="4"/>',
+'<path class="f-armor" d="M96 135 Q128 125 164 134 L175 189 L150 218 L105 215 L82 189Z"/><path d="M128 136 V211 M94 165 L128 188 L164 164" class="f-trim"/>',
+'<path d="M80 119 Q48 125 48 156 L76 172 L104 138Z M170 128 Q198 127 212 158 L184 181 L155 143Z" fill="url(#f-iron)" stroke="#c7d8bd" stroke-width="3"/>',
+'<path d="M60 156 L42 213 L68 228 L91 180Z M196 167 L218 226 L194 239 L175 190Z" fill="#365764" stroke="#9bc3bf" stroke-width="4"/>',
+'<path d="M65 209 L58 244 L85 252 L95 225Z M194 217 L180 245 L203 255 L225 235Z" fill="url(#f-iron)" stroke="#cee6d9" stroke-width="2"/>',
+'<path d="M100 55 Q126 23 155 50 L180 103 L162 137 L91 131 L74 99Z" fill="url(#f-hood)" stroke="#6f9899" stroke-width="4"/>',
+'<path d="M97 91 Q128 58 161 91 L153 127 Q126 145 102 121Z" fill="#142633"/><path d="M109 102 L124 106 M136 107 L149 102" stroke="#8de5d8" stroke-width="5" stroke-linecap="round" filter="drop-shadow(0 0 6px #45b7bd)"/>',
+'<path d="M98 119 L127 147 L156 119" fill="none" stroke="#d1ba7d" stroke-width="5"/><circle class="f-glow" cx="129" cy="166" r="7"/>',
+'<path d="M213 233 L236 174 L243 180 L224 240Z" fill="#354752"/><path class="f-blade" d="M218 232 L241 45 L251 23 L252 57 L231 237Z"/><path d="M203 230 L246 240 L244 248 L200 239Z" fill="#d5b36b"/><path d="M217 242 L212 278 L221 280 L228 244Z" fill="#5e4a32" stroke="#d5b36b" stroke-width="2"/>',
+'<path d="M76 245 L102 236" stroke="#d0d6bc" stroke-width="4"/>',
+'</svg>'
+].join('');
+const BEAST_SVG = [
+'<svg class="beast-svg" viewBox="0 0 260 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="뿔과 발톱이 있는 균열 야수">',
+'<defs><linearGradient id="b-rock" x2="1" y2="1"><stop stop-color="#889494"/><stop offset=".55" stop-color="#405764"/><stop offset="1" stop-color="#142730"/></linearGradient><radialGradient id="b-core"><stop stop-color="#fdf2c5"/><stop offset=".45" stop-color="#a2f0df"/><stop offset="1" stop-color="#1e7689"/></radialGradient></defs>',
+'<ellipse cx="127" cy="302" rx="92" ry="13" fill="#000" opacity=".47"/>',
+'<path d="M86 179 L42 242 L31 306 L72 309 L99 239Z M177 176 L218 245 L237 311 L195 307 L152 230Z" fill="url(#b-rock)" stroke="#9cb2b0" stroke-width="5"/>',
+'<path d="M81 200 L61 290 L98 309 L117 219Z M152 217 L171 308 L212 295 L195 199Z" fill="#3b5360" stroke="#afc5b8" stroke-width="4"/>',
+'<path d="M52 289 L33 318 L66 309 L80 320 L89 294 M180 300 L171 319 L201 309 L229 318 L217 287" fill="#c1d1c4" stroke="#728e8d" stroke-width="3"/>',
+'<path d="M70 173 Q55 116 84 86 L113 65 L155 70 Q210 111 190 179 L173 242 L87 238Z" fill="url(#b-rock)" stroke="#a6b4b1" stroke-width="5"/>',
+'<path d="M90 100 L67 35 L102 56 L122 89 M156 94 L187 28 L204 65 L184 119" fill="#667d86" stroke="#b5c9be" stroke-width="5"/>',
+'<path d="M92 114 Q124 86 169 115 L184 168 L162 207 L115 224 L81 183Z" fill="#243e48" stroke="#9abbb1" stroke-width="4"/>',
+'<path d="M101 154 L119 166 L140 149 L165 163 L142 179 L109 178Z" fill="#91f1df" filter="drop-shadow(0 0 12px #6df3df)"/>',
+'<path d="M93 190 L121 204 L169 184 L153 215 L123 229 L105 218Z" fill="#121c26" stroke="#b7ccbf" stroke-width="3"/>',
+'<path d="M100 193 L109 208 L121 198 L131 218 L143 196 L156 208 L167 186" fill="none" stroke="#eff2ce" stroke-width="4"/>',
+'<path d="M104 69 L130 21 L147 71 M48 140 L24 117 L67 99 M191 144 L231 118 L200 101" fill="#7d9b9b" stroke="#b5c8bb" stroke-width="4"/>',
+'<path d="M102 233 L124 256 L153 239 L163 260 L124 288 L91 259Z" fill="#284651" stroke="#789b96" stroke-width="4"/>',
+'<circle cx="127" cy="247" r="18" fill="url(#b-core)" filter="drop-shadow(0 0 20px #83e5d7)"/><path d="M124 231 L134 245 L126 267 L117 249Z" fill="#e6faf0"/>',
+'</svg>'
+].join('');
+function fighterArt() { return FIGHTER_SVG; }
+function beastArt() { return BEAST_SVG; }
+function gearClass() {
+  return [state.equipment.armor ? 'gear-heavy' : '', state.inventory.some(i => i.instanceId === state.equipment.weapon && i.power >= 45) ? 'blade-upgrade' : ''].join(' ');
+}
+function battleImpact(kind, number) {
+  const arena=document.querySelector('.arena-visual');
+  if (!arena) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const phase=kind==='skill'?'impact-skill':kind==='potion'?'heal':'impact';
+  arena.classList.remove('impact','impact-skill','counter');
+  if (phase==='impact' || phase==='impact-skill') arena.classList.add(phase);
+  const fx=document.createElement('div');
+  fx.className='arena-effect'+(kind==='potion'?' heal':'');
+  fx.textContent=(kind==='potion'?'+':'−')+String(number);
+  arena.appendChild(fx);
+  if (kind!=='potion') {
+    const slash=document.createElement('div');slash.className='arena-effect slash';arena.appendChild(slash);
+    setTimeout(()=>slash.remove(),850);
+  }
+  setTimeout(()=>{fx.remove();arena.classList.remove('impact','impact-skill','counter');},850);
+}
+
 function homePage() {
   const available = stages.find(s => !state.clearedStageIds.includes(s.id)) ?? stages.at(-1);
   const selected = stages.find(s => stageAccess(s,state).unlocked && !state.clearedStageIds.includes(s.id)) ?? stages[0];
   const craftable = recipes.filter(r => craftingStatus(r,state.wallet).craftable).length;
   return `${heading('BASE CAMP / OVERVIEW', '원정의 시작, 경계의 거점', '스테이지에서 획득한 전용 자원으로 장비를 만들고 다음 경계를 개척하세요.')}
-    <section class="hero" aria-label="다음 원정"><div class="hero-content"><div class="eyebrow">NEXT EXPEDITION · ZONE ${String(available.index).padStart(2,'0')}</div><h2>더 깊은 경계로,<br />새로운 자원을 찾아서.</h2><p>스테이지마다 획득 가능한 전용 소재가 다릅니다. 새로운 장비를 제작하고 더 높은 난이도의 구역에 도전하세요.</p><div class="hero-footer"><button type="button" data-action="navigate" data-id="expeditions" class="primary-button">원정 지도 열기 ${icon('arrow')}</button><button type="button" data-action="navigate" data-id="forge" class="ghost-button">장비 제작소</button></div></div></section>
+    <section class="hero" aria-label="다음 원정"><div class="hero-content"><div class="eyebrow">NEXT EXPEDITION · ZONE ${String(available.index).padStart(2,'0')}</div><h2>더 깊은 경계로,<br />새로운 자원을 찾아서.</h2><p>스테이지마다 획득 가능한 전용 소재가 다릅니다. 새로운 장비를 제작하고 더 높은 난이도의 구역에 도전하세요.</p><div class="hero-footer"><button type="button" data-action="navigate" data-id="expeditions" class="primary-button">원정 지도 열기 ${icon('arrow')}</button><button type="button" data-action="quick-battle" class="ghost-button">자동 전투 장면 보기</button></div></div><div class="hero-character ${gearClass()}" aria-label="캐릭터 외형 미리보기">${fighterArt()}</div></section>
     <div class="summary-grid" aria-label="플레이어 상태">
       <div class="summary-tile"><small>${icon('sword')} 현재 전투력</small><strong>${short(totalPower(state))}<span>POWER</span></strong></div>
       <div class="summary-tile"><small>${icon('map')} 완료한 구역</small><strong>${String(clearCount()).padStart(2,'0')}<span>/ ${String(stages.length).padStart(2,'0')} ZONES</span></strong></div>
@@ -767,7 +897,7 @@ function inventoryPage() {
   const slots = [['weapon','무기','sword'],['armor','방어구','shield'],['accessory','장신구','spark']];
   return `${heading('ARMORY / INVENTORY', '장비 보관함', '제작한 장비를 장착하여 전투력을 높입니다. 장비 유형별 한 슬롯을 사용합니다.')}
   <div class="summary-grid" style="margin:0 0 27px"><div class="summary-tile"><small>총 전투력</small><strong>${totalPower(state)}<span>POWER</span></strong></div><div class="summary-tile"><small>소유 장비</small><strong>${state.inventory.length}<span>ITEMS</span></strong></div><div class="summary-tile"><small>회복 물약</small><strong>${state.potions}<span>COUNT</span></strong></div></div>
-  <div class="bag-layout"><section class="panel"><div class="panel-head"><div><h2>착용 중인 장비</h2><small>장착 장비의 전투력만 합산</small></div></div><div class="equipment-slots">${slots.map(([slot,label,sym])=>{
+  <div class="bag-layout"><section class="panel"><div class="panel-head"><div><h2>착용 중인 장비</h2><small>장착 장비의 전투력만 합산</small></div></div><div class="loadout-portrait ${gearClass()}" aria-label="현재 착용 장비가 반영된 캐릭터">${fighterArt()}</div><div class="loadout-label">장비 외형 미리보기 · UI 시연용 아트</div><div class="equipment-slots">${slots.map(([slot,label,sym])=>{
     const item = state.inventory.find(i=>i.instanceId===state.equipment[slot]);
     return `<div class="equipment-slot"><div class="item-symbol" style="width:46px;min-width:46px;height:49px">${icon(sym)}</div><div><small>${label}</small><strong>${safe(item?.name ?? '비어 있음')}</strong></div><b>+${item?.power ?? 0}</b></div>`;
   }).join('')}</div></section>
@@ -783,55 +913,104 @@ async function startStage(stageId) {
   if (!s || !stageAccess(s,state).canEnter || isBusy()) return notify('입장 조건을 다시 확인하세요.');
   const outcome=await submitCommand('expedition.start.requested',{stageId,expectedPower:totalPower(state)});
   if (!outcome) return;
-  battle = { stageId, enemyHp:s.enemyHp, playerHp:state.player.maxHp, energy:100, round:0, log:'적과 조우했습니다. 행동을 선택하세요.' };
+  battle = { stageId, enemyHp:s.enemyHp, playerHp:state.player.maxHp, energy:100, round:0, wave:1, waves:2, auto:true, log:'적과 조우했습니다. 자동 전투가 시작됩니다.' };
   result = null; screen = 'battle'; render();
 }
+
 function battlePage() {
   if (!battle) { screen='expeditions'; return expeditionsPage(); }
-  const s = getStage(battle.stageId);
-  const enemyPercent = Math.max(0,Math.round(battle.enemyHp/s.enemyHp*100));
-  const playerPercent = Math.max(0,Math.round(battle.playerHp/state.player.maxHp*100));
-  return `<div class="battle-shell">${heading('EXPEDITION / COMBAT MOCK', `${s.title} · 전투 시연`, '실제 게임 전투 엔진이 아닌 클릭 기반 화면 흐름 검증용 목업입니다.')}
-    <section class="battle-view" aria-label="전투 화면"><div class="battle-top"><div><strong>ZONE ${String(s.index).padStart(2,'0')} / ${safe(s.title)}</strong><small>TIER ${s.tier} · ${safe(s.feature)}</small></div><button type="button" class="ghost-button" data-action="retreat" ${isBusy()?'disabled':''}>원정 중단</button></div>
-      <div class="enemy-target"><span class="eyebrow">ELITE ENCOUNTER</span><h2 style="margin:6px 0 12px">${safe(s.monster)}</h2><div class="health-caption"><span>적 체력</span><span>${Math.max(0,battle.enemyHp)} / ${s.enemyHp}</span></div><div class="healthbar"><span style="width:${enemyPercent}%"></span></div><div class="enemy-avatar" aria-hidden="true"><span>♜</span></div></div>
-      <div class="battle-bottom"><div class="battle-unit"><div class="health-caption"><strong>${safe(state.player.displayName)} · LV.${state.player.level}</strong><span>전투력 ${totalPower(state)}</span></div><div class="health-caption"><span>체력</span><span>${battle.playerHp} / ${state.player.maxHp}</span></div><div class="healthbar player"><span style="width:${playerPercent}%"></span></div><div class="health-caption"><span>기력</span><span>${battle.energy} / 100</span></div><div class="healthbar energy"><span style="width:${battle.energy}%"></span></div></div>
-      <div class="battle-actions"><h3>전투 행동</h3><div class="action-grid"><button class="secondary-button" type="button" data-action="battle-attack" ${isBusy()?'disabled':''}>${icon('sword')} 기본 공격</button><button class="secondary-button" type="button" data-action="battle-skill" ${battle.energy<30 || isBusy()?'disabled':''}>${icon('spark')} 전투 기술 (30)</button><button class="secondary-button" type="button" data-action="battle-potion" ${state.potions<=0 || isBusy()?'disabled':''}>${icon('potion')} 회복 물약 (${state.potions})</button></div><div class="battle-log" aria-live="polite">${safe(battle.log)}</div></div></div>
-    </section></div>`;
+  const s=getStage(battle.stageId);
+  const enemyPercent=Math.max(0,Math.round(battle.enemyHp/s.enemyHp*100));
+  const playerPercent=Math.max(0,Math.round(battle.playerHp/state.player.maxHp*100));
+  const autoText=battle.auto?'자동 전투 진행 중 · 스킬 자동 발동':'전투 연출 일시정지';
+  return [
+    '<div class="battle-shell">',
+    heading('EXPEDITION / AUTO COMBAT VISUAL',s.title+' · 자동 전투','실제 코어 연동 전의 2D 전투 연출 시연입니다. 캐릭터·몬스터·피격 효과는 UI 검토용 임시 아트입니다.'),
+    '<section class="battle-view" aria-label="2D 자동 전투 장면">',
+      '<div class="battle-top"><div><strong>ZONE ',String(s.index).padStart(2,'0'),' / ',safe(s.title),'</strong><small>TIER ',s.tier,' · ',safe(s.feature),'</small></div>',
+        '<button type="button" class="ghost-button" data-action="retreat" ',isBusy()?'disabled':'','>원정 중단</button></div>',
+      '<div class="arena-visual env-',safe(s.environment),'" role="img" aria-label="왼쪽 개척자 캐릭터와 오른쪽 ',safe(s.monster),'가 전투 중인 장면">',
+        '<div class="arena-mountains" aria-hidden="true"></div><div class="arena-floor" aria-hidden="true"></div>',
+        '<div class="arena-center">WAVE ',battle.wave,' / ',battle.waves,' · ROUND ',battle.round,'</div>',
+        '<div class="arena-caption left"><strong>',safe(state.player.displayName),' · LV.',state.player.level,'</strong><div class="healthbar player"><span style="width:',playerPercent,'%"></span></div><span>',battle.playerHp,' / ',state.player.maxHp,' HP</span></div>',
+        '<div class="arena-caption right"><strong>',safe(s.monster),'</strong><div class="healthbar"><span style="width:',enemyPercent,'%"></span></div><span>',Math.max(0,battle.enemyHp),' / ',s.enemyHp,' HP</span></div>',
+        '<div class="arena-shadow player-shadow" aria-hidden="true"></div><div class="arena-shadow monster-shadow" aria-hidden="true"></div>',
+        '<div class="arena-actor player-actor ',gearClass(),'" aria-hidden="true">',fighterArt(),'</div>',
+        '<div class="arena-actor monster-actor" aria-hidden="true">',beastArt(),'</div>',
+      '</div>',
+      '<div class="battle-bottom"><div class="battle-unit">',
+        '<div class="health-caption"><strong>',safe(state.player.displayName),' · LV.',state.player.level,'</strong><span>전투력 ',short(totalPower(state)),'</span></div>',
+        '<div class="health-caption"><span>체력</span><span>',battle.playerHp,' / ',state.player.maxHp,'</span></div>',
+        '<div class="healthbar player"><span style="width:',playerPercent,'%"></span></div>',
+        '<div class="health-caption"><span>기력</span><span>',battle.energy,' / 100</span></div>',
+        '<div class="healthbar energy"><span style="width:',battle.energy,'%"></span></div>',
+      '</div><div class="battle-actions">',
+        '<h3>자동 전투</h3><p class="auto-status">',safe(autoText),'</p>',
+        '<button type="button" class="primary-button" data-action="toggle-auto" ',isBusy()?'disabled':'','>',battle.auto?'일시정지':'전투 재개','</button>',
+        '<div class="battle-log" aria-live="polite">',safe(battle.log),'</div>',
+        '<p class="battle-demo-tag">전투·보상 수치는 시연용 데이터 · 수동 공격 조작 없는 방치형 UX</p>',
+      '</div></div>',
+    '</section></div>'
+  ].join('');
 }
+
+let combatBusy=false;
+const combatSleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
 async function battleAction(action) {
-  if (!battle || isBusy()) return;
-  const s = getStage(battle.stageId);
-  const nextBattle = { ...battle };
-  let log;
-  if (action==='attack') { nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-35); nextBattle.energy=Math.min(100,nextBattle.energy+15); log='기본 공격 적중! 피해 35.'; }
-  else if (action==='skill') { if (nextBattle.energy < 30) return; nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-62); nextBattle.energy-=30; log='전투 기술 적중! 피해 62.'; }
-  else if (action==='potion') {
-    if (state.potions <= 0) return;
-    if (nextBattle.playerHp===state.player.maxHp) return notify('체력이 이미 가득 찼습니다.');
-    if (!await submitCommand('combat.mock.potion',{})) return;
-    nextBattle.playerHp=Math.min(state.player.maxHp,nextBattle.playerHp+45);
-    log='회복 물약 사용! 체력 +45.';
-  }
-  else return;
-  emit('combat.mock.action', { stageId:s.id, action, round:nextBattle.round+1 });
-  nextBattle.round+=1;
-  if (nextBattle.enemyHp===0) {
-    // Deterministic demo ONLY. The real client must receive authoritative combat results.
-    const completed=await submitCommand('expedition.complete.mock',{stageId:s.id,rewardQuantity:4});
-    if (!completed) return;
-    const rewards=completed.meta.reward;
-    emit('expedition.result.mocked', { stageId:s.id, outcome:'victory', rewards });
-    result = { stageId:s.id, victory:true, rewards };
-    battle=null; screen='result'; render(); return;
-  }
-  nextBattle.playerHp=Math.max(0,nextBattle.playerHp-s.enemyDamage);
-  nextBattle.log=`${log} 적의 반격으로 체력 ${s.enemyDamage} 감소.`;
-  if (nextBattle.playerHp===0) {
-    emit('expedition.result.mocked', { stageId:s.id, outcome:'defeat', rewards:{} });
-    result={ stageId:s.id,victory:false,rewards:{} }; battle=null;screen='result';render();return;
-  }
-  battle=nextBattle; render();
+  if (!battle || screen!=='battle' || isBusy() || combatBusy || modal) return;
+  combatBusy=true;
+  const original=battle;
+  const s=getStage(original.stageId);
+  const nextBattle={...original};
+  let damage=0, log='';
+  try {
+    if(action==='attack'){
+      damage=35;nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-damage);
+      nextBattle.energy=Math.min(100,nextBattle.energy+15);
+      log='자동 기본 공격 · 피해 '+damage;
+    }else if(action==='skill'){
+      if(nextBattle.energy<30)return;
+      damage=62;nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-damage);
+      nextBattle.energy-=30;
+      log='자동 전투 기술 · 피해 '+damage;
+    }else if(action==='potion'){
+      if(state.potions<=0 || nextBattle.playerHp>=state.player.maxHp)return;
+      const outcome=await submitCommand('combat.mock.potion',{});
+      if(!outcome)return;
+      nextBattle.playerHp=Math.min(state.player.maxHp,nextBattle.playerHp+45);
+      log='자동 회복 물약 · 체력 +45';
+    }else return;
+    emit('combat.mock.action',{stageId:s.id,action,round:nextBattle.round+1,visualWave:nextBattle.wave});
+    nextBattle.round++;
+    if(nextBattle.enemyHp===0){
+      nextBattle.log=log+' · 적 처치!';
+      battle=nextBattle;render();battleImpact(action,damage||45);
+      await combatSleep(750);
+      if(battle!==nextBattle || screen!=='battle') return;
+      if(nextBattle.wave<nextBattle.waves){
+        battle={...nextBattle,wave:nextBattle.wave+1,enemyHp:s.enemyHp,log:'다음 적이 등장했습니다. 자동 전투를 계속합니다.'};
+        render();return;
+      }
+      const completed=await submitCommand('expedition.complete.mock',{stageId:s.id,rewardQuantity:4});
+      if(!completed)return;
+      const rewards=completed.meta.reward;
+      emit('expedition.result.mocked',{stageId:s.id,outcome:'victory',rewards});
+      result={stageId:s.id,victory:true,rewards};
+      battle=null;screen='result';render();return;
+    }
+    nextBattle.playerHp=Math.max(0,nextBattle.playerHp-s.enemyDamage);
+    nextBattle.log=log+' · 적 반격 '+s.enemyDamage+' 피해';
+    battle=nextBattle;render();battleImpact(action,damage||45);
+    if(nextBattle.playerHp===0){
+      await combatSleep(650);
+      if(battle!==nextBattle || screen!=='battle')return;
+      emit('expedition.result.mocked',{stageId:s.id,outcome:'defeat',rewards:{}});
+      result={stageId:s.id,victory:false,rewards:{}};
+      battle=null;screen='result';render();
+    }
+  }finally{combatBusy=false;}
 }
+
 function resultPage() {
   if (!result) { screen='expeditions'; return expeditionsPage(); }
   const s=getStage(result.stageId);
@@ -900,6 +1079,8 @@ async function handleAction(action,id) {
       notify('장비를 장착했습니다. 현재 전투력이 반영되었습니다.');
       render(); return;
     }
+    case 'quick-battle':startStage('S01');return;
+    case 'toggle-auto':if(battle){battle.auto=!battle.auto;battle.log=battle.auto?'자동 전투를 재개했습니다.':'자동 전투가 일시정지되었습니다.';render();}return;
     case 'battle-attack':battleAction('attack');return;
     case 'battle-skill':battleAction('skill');return;
     case 'battle-potion':battleAction('potion');return;
@@ -942,6 +1123,10 @@ window.addEventListener('keydown',e=>{
   }
 });
 // Inspection-only test surface; no gameplay authority.
+window.setInterval(()=>{if(screen!=='battle'||!battle||!battle.auto||combatBusy||isBusy()||modal)return;
+  const action=battle.playerHp<=44&&state.potions>0?'potion':battle.energy>=30?'skill':'attack';
+  battleAction(action);
+},1600);
 window.__UI5_PROTOTYPE__={snapshot:()=>structuredClone({state,screen,selectedStageId,selectedRecipeId,battle,result,commands,bridgeStatus}),reset:()=>handleAction('reset'),demo:{failNext:()=>mockTransport.failNextRequest(),bumpRevision:()=>mockTransport.bumpDemoRevision(),read:()=>mockTransport.inspectDemo()}};
 render();
 
