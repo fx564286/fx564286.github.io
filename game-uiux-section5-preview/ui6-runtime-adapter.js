@@ -19,6 +19,8 @@ const str=(v,n=64)=>typeof v==='string'&&v.trim().length>0&&v.length<=n;
 const statNames=['str','agi','vit','int'];const actors=new Map();
 let live=null,tab='stats',sendCommand=null,pending=false,serial=0,message='';
 let commandEpoch=0; // token scoped to the run that issued a command
+let needsForegroundSnapshot=false;
+let suspended=false;
 const retiredRuns=new Set();
 function validate(v){
  if(!obj(v)||v.contract!==SCHEMA)return 'contract mismatch';
@@ -73,7 +75,7 @@ function row(title,sub){
 }
 function button(title,op,payload,blocked){
  const b=elem('button',title,'action-btn');b.type='button';b.dataset.runtimeOp=op;
- b.dataset.runtimePayload=JSON.stringify(payload);b.disabled=!!blocked||!sendCommand||!live||pending;return b;
+ b.dataset.runtimePayload=JSON.stringify(payload);b.disabled=!!blocked||!sendCommand||!live||pending||needsForegroundSnapshot;return b;
 }
 function placeholder(text){
  panel.replaceChildren(elem('p',text,'ui6-warning'));
@@ -169,7 +171,16 @@ function acceptSnapshot(input){
   ...(input.skills?{skills:input.skills.map(x=>({...x}))}:{}),
   ...(input.potion?{potion:{...input.potion}}:{})
  };
- live=clean;updateScene(live);render();return{ok:true,revision:live.revision};
+ live=clean;
+ // Updates received while the app is hidden are useful for projection but
+ // cannot prove that the view is current at the next foreground activation.
+ if(needsForegroundSnapshot && !suspended && !document.hidden) {
+   needsForegroundSnapshot=false;
+   message='';
+ }
+ updateScene(live);render();
+ if(needsForegroundSnapshot)markStaleView();
+ return{ok:true,revision:live.revision};
 }
 function connect(port){
  if(!obj(port)||typeof port.dispatch!=='function')return{ok:false,reason:'dispatch required'};
@@ -177,7 +188,7 @@ function connect(port){
  sendCommand=port.dispatch;render();return{ok:true};
 }
 async function send(op,payload){
- if(!live||!sendCommand||pending)return;
+ if(!live||!sendCommand||pending||needsForegroundSnapshot)return;
  const epoch=++commandEpoch;
  const c={contract:CSCHEMA,requestId:'ui6-'+(++serial),runId:live.runId,baseRevision:live.revision,op,payload};
  pending=true;message='코어 명령 확인 대기';render();
@@ -210,6 +221,42 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
  if(e.target.closest('#settings-content')){e.preventDefault();e.stopImmediatePropagation();}
 },true);
+function markStaleView(){
+ // Preserve the last known values for read-only inspection, but visibly
+ // distinguish them from fresh authoritative data and block mutation intents.
+ $('.auto-indicator').textContent='재동기화 대기';
+ $('[data-ui="arena-status"]').textContent='마지막 수신 상태 · 최신 확인 전';
+ $('.arena-wave').textContent='화면 복귀 후 새 게임 상태 대기';
+}
+function suspendRuntimeView(){
+ if(!live)return; // Initial disconnected screen already has no authority.
+ needsForegroundSnapshot=true;
+ suspended=true;
+ commandEpoch++; // supersede any old host promise/callback
+ pending=false;
+ message='화면 복귀 후 새 상태 대기';
+ render();
+ markStaleView();
+}
+// Android WebView host Activity lifecycle commonly suspends a page, and BFCache
+// can restore a DOM snapshot. Neither event is a server acknowledgment.
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){suspendRuntimeView();return;}
+ if(suspended){
+   suspended=false;
+   render();
+   markStaleView();
+ }
+});
+window.addEventListener('pagehide',suspendRuntimeView);
+window.addEventListener('pageshow',event=>{
+ if(event.persisted){
+   suspendRuntimeView();
+   suspended=false; // pageshow means rendering resumed, but state is stale
+   render();
+   markStaleView();
+ }
+});
 $('.currency-chip').textContent='—';
 $('.stage-copy strong').textContent='전투 상태 대기';
 $('.stage-copy small').textContent='CORE 미연결';
