@@ -1,0 +1,125 @@
+{
+  "submission_id": "ECL_UI6_014_PENDING_INTAKE",
+  "task_id": "UI6-014",
+  "section_id": "06",
+  "section_alias_in_chat": "05",
+  "ownership_approval": "PENDING_01_CENTRAL_DECISION",
+  "approval_owner": "01",
+  "status": "UI_BOUNDARY_BROWSER_VERIFIED__NOT_STAGED__NOT_GAME_INTEGRATED__ANDROID_UNVERIFIED",
+  "repo": "fx564286/fx564286.github.io",
+  "repo_role": "UI_OWNED_PREVIEW_NOT_COMMON_GAME_REPO",
+  "source_files": [
+    {
+      "source": "game-uiux-section5-preview/one-screen.html",
+      "proposed_target": "game-uiux-section5-preview/one-screen.html",
+      "bytes": 433035,
+      "sha256": "a836e6145a14fa23295ed5daa41ca509ff2594f31ad2c9b31471afd82dd63a36"
+    },
+    {
+      "source": "game-uiux-section5-preview/ui6-runtime-adapter.js",
+      "proposed_target": "game-uiux-section5-preview/ui6-runtime-adapter.js",
+      "bytes": 13092,
+      "sha256": "93057577a502a6c42898a17f3eb7ad51974de55e06154a31593498e58ed05e71"
+    },
+    {
+      "source": "game-uiux-section5-preview/tests/ui6-014-integration-port.cjs",
+      "proposed_target": "game-uiux-section5-preview/tests/ui6-014-integration-port.cjs",
+      "bytes": 6682,
+      "sha256": "a737bcb871706ea61c1e73ce4377b84fbddaf491b93e8c9147089d47f103cc27"
+    },
+    {
+      "source": "game-uiux-section5-preview/tests/ui6-014-rejection-restore.cjs",
+      "proposed_target": "game-uiux-section5-preview/tests/ui6-014-rejection-restore.cjs",
+      "bytes": 4807,
+      "sha256": "4d77584853c3386b1387bdb7e19e5bdac7a0ef9175d184a2887cfa3ea54d7898"
+    },
+    {
+      "source": "game-uiux-section5-preview/UI6_014_RUNTIME_CONTRACT.md",
+      "proposed_target": "game-uiux-section5-preview/UI6_014_RUNTIME_CONTRACT.md",
+      "bytes": 9177,
+      "sha256": "4fead12613571e3f1a6421539200fe73be1ec4a9b92a17ae76531f2afc536e9b"
+    }
+  ],
+  "provides": [
+    {
+      "name": "ui6.view",
+      "version": "0.1-proposal",
+      "owner": "06",
+      "approved": false
+    },
+    {
+      "name": "ui6.command",
+      "version": "0.1-proposal",
+      "owner": "06",
+      "approved": false
+    }
+  ],
+  "consumes": [
+    {
+      "name": "core.combat_event_feed",
+      "version": "0.2",
+      "owner": "01",
+      "verified_mapping": false
+    },
+    {
+      "name": "core.auto_battle",
+      "version": "0.1",
+      "owner": "01",
+      "verified_mapping": false
+    },
+    {
+      "name": "equipment.access.policy",
+      "version": "v1-preview",
+      "owner": "08",
+      "verified_mapping": false
+    },
+    {
+      "name": "art.character_rig",
+      "version": "unapproved",
+      "owner": "07",
+      "verified_mapping": false
+    }
+  ],
+  "requires": [
+    "01 section number/ownership decision",
+    "01 actual engine source and feed schema",
+    "08 canonical slot IDs",
+    "07 official rig and 6 equipment visual mapping",
+    "09 persistence/authority transport"
+  ],
+  "behaviors": [
+    "one portrait screen combat above controls",
+    "no manual attacks",
+    "multiple enemies positions from external authoritative projection",
+    "no local gold/HP/loot/reward generation in integration mode",
+    "no optimistic stat write",
+    "snapshot validation before mutation",
+    "duplicate/reordered snapshots rejected",
+    "demo mode unchanged"
+  ],
+  "verification": {
+    "source": "chromium-playwright synthetic snapshot contract; not actual engine",
+    "commands": [
+      "node --check ui6-runtime-adapter.js",
+      "node tests/ui6-014-integration-port.cjs",
+      "node tests/ui6-014-rejection-restore.cjs",
+      "node tests/ui5-012-one-screen.cjs",
+      "node tests/ui5-012-state-and-a11y.cjs",
+      "node tests/ui5-013-character-art.cjs"
+    ],
+    "local_result": "PASS exit 0",
+    "integration_result": "BLOCKED_NO_OFFICIAL_SOURCE",
+    "android_result": "NOT_RUN"
+  },
+  "blockers": [
+    "01 core ECL-CORE-002 zip binary not downloadable via available Space tool",
+    "common game repo not confirmed",
+    "official event/status projection map not approved",
+    "real saved state/restoration not integrated",
+    "Android engine source and device not supplied"
+  ],
+  "related_source_pages": [
+    "https://chatgpt.com/space/page_75f14346be3c8191b352923ebb201371",
+    "https://chatgpt.com/space/page_6c56240d3fe88191a1fc2f22b7029448"
+  ]
+}
