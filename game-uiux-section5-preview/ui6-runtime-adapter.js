@@ -18,6 +18,7 @@ const obj=v=>v!==null&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototy
 const str=(v,n=64)=>typeof v==='string'&&v.trim().length>0&&v.length<=n;
 const statNames=['str','agi','vit','int'];const actors=new Map();
 let live=null,tab='stats',sendCommand=null,pending=false,serial=0,message='';
+let commandEpoch=0; // token scoped to the run that issued a command
 const retiredRuns=new Set();
 function validate(v){
  if(!obj(v)||v.contract!==SCHEMA)return 'contract mismatch';
@@ -154,6 +155,11 @@ function acceptSnapshot(input){
  if(live&&live.runId===input.runId&&input.revision<=live.revision)return{ok:false,reason:'stale revision'};
  if(retiredRuns.has(input.runId))return{ok:false,reason:'retired run replay'};
  if(live&&live.runId!==input.runId){retiredRuns.add(live.runId);if(retiredRuns.size>64)retiredRuns.delete(retiredRuns.values().next().value);}
+ // Only a run switch supersedes pending commands. Normal combat ticks are NOT
+ // command acknowledgments; unlocking on each revision could duplicate commands.
+ if(live&&live.runId!==input.runId){
+   commandEpoch++;pending=false;message='';
+ }
  const clean={
   contract:SCHEMA,runId:input.runId,revision:input.revision,
   stage:{...input.stage},player:{...input.player,stats:{...input.player.stats}},
@@ -172,11 +178,18 @@ function connect(port){
 }
 async function send(op,payload){
  if(!live||!sendCommand||pending)return;
- pending=true;message='코어 명령 확인 대기';render();
+ const epoch=++commandEpoch;
  const c={contract:CSCHEMA,requestId:'ui6-'+(++serial),runId:live.runId,baseRevision:live.revision,op,payload};
- try{await sendCommand(c);message='명령 전달됨 · 새 상태 대기';}
- catch{message='명령 실패 · 상태 불변';}
- finally{pending=false;render();}
+ pending=true;message='코어 명령 확인 대기';render();
+ try{
+   await sendCommand(c);
+   if(epoch===commandEpoch)message='명령 전달됨 · 새 상태 대기';
+ }catch{
+   if(epoch===commandEpoch)message='명령 실패 · 상태 불변';
+ }finally{
+   // Ignore late responses from a previous run; do not mutate the current run.
+   if(epoch===commandEpoch){pending=false;render();}
+ }
 }
 document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;
