@@ -66,7 +66,7 @@ node tests/ui5-013-character-art.cjs
 
 **Local:** all 8 commands exit 0. New UI6-016 covers 320, 390, 1365 widths; suspend, background snapshot, fresh foreground snapshot, pre-suspend delayed command, BFCache, no JS errors/overflow. UI6-014/015 and UI5-012/013 adjacent tests also PASS.
 
-**Public deployment:** check the page `https://fx564286.github.io/game-uiux-section5-preview/one-screen.html?mode=integration&build=ui6-016` and its `ui6-runtime-adapter.js` SHA-256. The Git blob was updated, but a CDN/browser may briefly continue serving an older asset. Only claim deployed/browser verified after SHA and remote tests both pass.
+**Public deployment VERIFIED:** `https://fx564286.github.io/game-uiux-section5-preview/one-screen.html?mode=integration&build=ui6-016`. GitHub Pages adapter HTTP 200, 15,339 bytes and SHA-256 `8ef12ca2e23bb39113f9c68dc7a56922dea8bce49975a7c4806ca1a2fa918718` exactly match local and GitHub source. Public Chromium ran `ui6-016-foreground-resync.cjs`, `ui6-015-command-lifecycle.cjs`, `ui6-014-integration-port.cjs`, `ui6-014-rejection-restore.cjs` successfully; combined exit code 0.
 
 **Not performed:** Godot editor/runtime test, Android APK build, actual WebView lifecycle on a device, Core runtime source/API mapping, server persistence, authoritative reward transaction or 02 same-build Android QA.
 
