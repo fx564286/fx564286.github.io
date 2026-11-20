@@ -337,6 +337,64 @@ h3 { font-size: 15px; letter-spacing: -.03em; margin: 0; }
 .env-stars .monster-actor {filter:hue-rotate(165deg) saturate(1.15);}
 .env-abyss .monster-actor {filter:hue-rotate(193deg) saturate(1.4);}
 
+
+/* UI5-009 — multi-target idle hunt and full-body character inspection */
+.swarm-field { position:relative; height:clamp(360px,45vw,500px); margin:12px 0; isolation:isolate; overflow:hidden; border:1px solid #4b6d72; border-radius:14px; background:radial-gradient(ellipse at 75% 25%,#41696a99,transparent 35%),linear-gradient(180deg,#294452,#182a39 58%,#0c1b28); }
+.swarm-field::before {content:"";position:absolute;inset:0;background:linear-gradient(165deg,transparent 38%,#182f3d 39% 55%,transparent 56%),linear-gradient(195deg,transparent 45%,#1b3741 46% 58%,transparent 59%);opacity:.78}
+.swarm-field::after {content:"";position:absolute;bottom:-22%;left:-15%;height:45%;width:130%;border-radius:50%;background:radial-gradient(ellipse at 50% 0,#35626a77,transparent 50%),#112532;box-shadow:0 -15px 35px #0b1b2a55;}
+.swarm-field.env-bog {background:linear-gradient(180deg,#233f3d,#102824);}
+.swarm-field.env-forge {background:linear-gradient(180deg,#503936,#201820);}
+.swarm-field.env-ruins {background:linear-gradient(180deg,#40415b,#191b2b);}
+.swarm-field.env-stars {background:linear-gradient(180deg,#233f62,#14192f);}
+.swarm-field.env-abyss {background:linear-gradient(180deg,#412f52,#151326);}
+.swarm-hero {position:absolute;left:3%;bottom:13%;width:31%;height:67%;z-index:6;filter:drop-shadow(0 8px 5px #000c);pointer-events:none;}
+.swarm-hero::after {content:"";position:absolute;left:9%;right:13%;bottom:0;height:15px;border-radius:50%;background:#03080a66;filter:blur(7px);}
+.swarm-hero svg {width:100%;height:100%;animation:idle-breathe 2.4s ease-in-out infinite;transform-origin:50% 82%;}
+.mob-unit {position:absolute;left:var(--mx);top:var(--my);width:19%;height:30%;max-width:128px;max-height:150px;z-index:var(--layer);transform:translate(-50%,-50%) scale(var(--ms));transition:opacity .25s ease,filter .25s ease;filter:drop-shadow(0 8px 8px #000a);}
+.mob-unit svg {width:100%;height:100%;filter:hue-rotate(var(--hue));animation:idle-breathe 2.8s ease-in-out infinite;}
+.mob-unit:nth-child(odd) svg {animation-delay:-.7s;}
+.mob-unit.fallen {opacity:.15;filter:grayscale(1) blur(1.5px);pointer-events:none;}
+.mob-hp {position:absolute;top:-7px;left:15%;width:70%;height:4px;border-radius:2px;background:#24323c;z-index:2;overflow:hidden;box-shadow:0 0 2px #080c12;}
+.mob-hp span {display:block;height:100%;background:#d48579;transition:width .25s;}
+.swarm-stats {position:absolute;z-index:12;top:11px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none;}
+.swarm-label {display:inline-flex;flex-direction:column;gap:5px;background:#0b1c2aaa;border:1px solid #42616c;padding:7px 10px;border-radius:8px;font-size:10px;color:#dce8e9;backdrop-filter:blur(3px);}
+.swarm-label strong {font-size:12px;color:#f0d6a1;}
+.swarm-label:last-child {text-align:right;}
+.aoe-streak {position:absolute;z-index:11;left:43%;top:32%;width:55%;height:45%;pointer-events:none;border:3px solid #eac586;box-shadow:0 0 32px #edd6a8;border-radius:50%;opacity:0;transform:rotate(-20deg) scale(.3);}
+.swarm-field.impact .aoe-streak,.swarm-field.impact-skill .aoe-streak {animation:swarm-aoe .6s ease-out;}
+.swarm-field.impact-skill .aoe-streak {border-color:#81eff5;box-shadow:0 0 42px #80e9f3;}
+.swarm-field.impact .swarm-hero,.swarm-field.impact-skill .swarm-hero {animation:hero-lunge .55s ease-out;}
+.swarm-field.counter .swarm-hero {animation:hero-hit .5s ease-out;}
+.swarm-combat-text {position:absolute;top:45%;left:45%;z-index:12;color:#fff0c7;text-shadow:0 0 15px #d3ad6b;font-weight:850;font-size:clamp(18px,2.6vw,31px);pointer-events:none;animation:float-damage .9s forwards;}
+.swarm-combat-text.heal {color:#aff5c8;left:25%;}
+.swarm-legend {display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 11px;margin:10px 0;border:1px solid #37505d;border-radius:9px;background:#152735;font-size:11px;color:#bdcbcf;}
+.swarm-legend strong {color:#eed19b;}
+.battle-shell {min-height:calc(100dvh - 145px);}
+.battle-view {min-height:0;}
+.battle-bottom {grid-template-columns:1fr 1.5fr;}
+.character-inspector {display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.75fr);gap:16px;align-items:start;}
+.inspector-stage {position:relative;border:1px solid #465866;border-radius:16px;background:radial-gradient(ellipse at 50% 38%,#315666bb,transparent 56%),linear-gradient(150deg,#162935,#0c1722);min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px;overflow:hidden;}
+.inspector-stage .inspector-head {align-self:stretch;display:flex;align-items:center;justify-content:space-between;z-index:3;}
+.inspector-stage .inspector-head strong {font-size:12px;color:#dce8e4;}
+.inspector-stage .inspector-head small {font-size:10px;color:#edc984;}
+.inspector-figure {height:390px;width:min(87%,340px);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:2;}
+.inspector-figure svg {width:100%;height:100%;object-fit:contain;transition:transform .2s;}
+.inspector-figure.zoomed svg {transform:scale(1.65) translateY(14%);}
+.inspector-controls {z-index:3;display:flex;gap:9px;justify-content:center;align-items:center;flex-wrap:wrap;width:100%;}
+.inspector-disclaimer {margin:10px 0 0;text-align:center;color:#a5b4bf;font-size:10px;line-height:1.6;}
+.inspector-side .panel {margin-bottom:13px;}
+.inspector-gear {display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px;}
+.inspector-slot {display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px;background:#1d303d;border:1px solid #38505a;border-radius:9px;}
+.inspector-slot strong {display:block;font-size:12px;}
+.inspector-slot small {font-size:10px;color:#a7b7bd;display:block;margin-top:5px;}
+.inspector-slot b {font-size:11px;color:#e6cc9d;white-space:nowrap;}
+.visual-contract-note {border-top:1px solid #41505a;margin-top:16px;padding-top:13px;color:#c0cdd1;font-size:11px;line-height:1.8;}
+.character-link {border:1px solid #b1a075;background:#1c313c;color:#f0d7aa;border-radius:9px;padding:10px 14px;font-weight:750;font-size:11px;}
+@keyframes swarm-aoe {0%{opacity:0;transform:rotate(-25deg) scale(.2)}40%{opacity:.95;transform:rotate(-20deg) scale(1)}100%{opacity:0;transform:rotate(-12deg) scale(1.15)}}
+@media(max-width:800px) {.main-nav {grid-template-columns:repeat(5,minmax(0,1fr));} .nav-button{font-size:10px;min-width:0;} .character-inspector{grid-template-columns:1fr;}}
+@media(max-width:560px) {.swarm-field{height:370px;margin:10px 0 8px;} .swarm-hero{width:37%;height:63%;left:-5%;bottom:14%;} .mob-unit{width:23%;height:29%;} .swarm-stats{left:6px;right:6px;top:7px;} .swarm-label{padding:6px;font-size:9px;} .swarm-label strong{font-size:10px;} .battle-view{min-height:0;padding:10px;} .battle-shell h1{font-size:25px;} .battle-bottom{grid-template-columns:1fr;gap:7px;} .battle-unit,.battle-actions{padding:10px;} .battle-unit .healthbar{margin-bottom:5px;} .inspector-stage{min-height:475px;padding:14px;} .inspector-figure{height:355px;width:100%;} .inspector-side .panel{padding:14px;} .inspector-stage .inspector-head{align-items:flex-start;} }
+@media(prefers-reduced-motion:reduce) {.swarm-hero,.swarm-hero svg,.mob-unit svg,.swarm-field .aoe-streak {animation:none!important;}}
+
 </style>
 </head>
 <body>
@@ -673,7 +731,7 @@ const icon = (name, className = '') => `<svg class="icon ${className}" aria-hidd
 const resourceIcon = (id) => `<span class="resource-emblem ${resources[id]?.tone ?? ''}" aria-hidden="true">${safe(resources[id]?.symbol ?? '•')}</span>`;
 const short = (num) => Number(num).toLocaleString('ko-KR');
 const navItems = [
-  ['home','home','거점'], ['expeditions','map','원정 지도'], ['forge','forge','제작소'], ['inventory','bag','보관함']
+  ['battle','sword','사냥'], ['character','shield','캐릭터'], ['expeditions','map','원정'], ['forge','forge','제작'], ['inventory','bag','장비']
 ];
 
 let state = initialState();
@@ -681,6 +739,7 @@ let bridgeStatus = { phase:'ready', revision:0, pending:null, error:null, reconc
 const mockTransport = createMockGameTransport({ initial:state, delayMs:180 });
 const isBusy = () => bridgeStatus.phase === 'pending' || bridgeStatus.phase === 'syncing';
 let screen = 'home';
+let inspectorZoom = false;
 let selectedStageId = 'S02';
 let selectedRecipeId = 'R01';
 let modal = null;
@@ -743,6 +802,11 @@ const notify = (message) => {
 const navigate = (next) => {
   if (!navItems.some(([id]) => id === next)) return;
   emit('navigation.opened', { screen: next });
+  if(next==='battle'){
+    if(battle){screen='battle';render();window.scrollTo({top:0,behavior:'instant'});return;}
+    if(result){screen='result';render();return;}
+    startStage('S01');return;
+  }
   screen = next;
   render();
   window.scrollTo({ top:0, behavior:'instant' });
@@ -752,10 +816,10 @@ const getRecipe = (id) => recipes.find(r => r.id === id);
 const currentStage = () => getStage(selectedStageId) ?? stages[0];
 const currentRecipe = () => getRecipe(selectedRecipeId) ?? recipes[0];
 const clearCount = () => state.clearedStageIds.length;
-const displayTitle = () => ({home:'거점 개요',expeditions:'원정 지도',forge:'장비 제작소',inventory:'장비 보관함',battle:'원정 진행',result:'원정 결과'})[screen];
+const displayTitle = () => ({home:'거점 개요',expeditions:'원정 지도',forge:'장비 제작소',inventory:'장비 보관함',character:'캐릭터 검사',battle:'자동 사냥',result:'원정 결과'})[screen];
 
 function shell(content) {
-  const activeScreen = ['battle','result'].includes(screen) ? 'expeditions' : screen;
+  const activeScreen = screen==='result' ? 'battle' : screen;
   const nav = navItems.map(([id, sym, label]) => `<button type="button" data-action="navigate" data-id="${id}" class="nav-button ${activeScreen === id ? 'active' : ''}" aria-current="${activeScreen === id ? 'page' : 'false'}">${icon(sym)}<span>${label}</span></button>`).join('');
   return `<aside class="sidebar" aria-label="주 메뉴">
       <div class="brand"><div class="brand-mark" aria-hidden="true"><b>◇</b></div><div class="brand-text"><strong>경계의 기록</strong><small>CHRONICLE / UI STUDY</small></div></div>
@@ -764,7 +828,7 @@ function shell(content) {
     </aside>
     <main id="main-content" tabindex="-1" class="main-content">
       <header class="topbar"><div class="breadcrumb"><span>THE FRONTIER</span>${icon('chevron')}<span>${safe(displayTitle())}</span></div><div class="top-actions"><button type="button" data-action="settings" class="mobile-settings" aria-label="프로토타입 정보 · 설정">${icon('settings')}</button><div class="world-pill"><i></i> MOCK SESSION</div><div class="avatar" title="개척자" aria-label="개척자 프로필">✦</div></div></header>
-      ${connectionBanner()}${content}<footer class="footer"><span>UI SYSTEM · DRAFT 0.1</span><span>내부 시연용 — 시스템 수치 및 명칭 미확정</span></footer>
+      ${connectionBanner()}${content}<footer class="footer"><span>UI SYSTEM · DRAFT 0.3</span><span>내부 시연용 — 시스템 수치 및 명칭 미확정</span></footer>
     </main>
     ${modal ? modalMarkup() : ''}${toastMessage ? `<div class="toast" role="status">${safe(toastMessage)}</div>` : ''}`;
 }
@@ -820,7 +884,7 @@ function gearClass() {
   return [state.equipment.armor ? 'gear-heavy' : '', state.inventory.some(i => i.instanceId === state.equipment.weapon && i.power >= 45) ? 'blade-upgrade' : ''].join(' ');
 }
 function battleImpact(kind, number) {
-  const arena=document.querySelector('.arena-visual');
+  const arena=document.querySelector('.swarm-field, .arena-visual');
   if (!arena) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const phase=kind==='skill'?'impact-skill':kind==='potion'?'heal':'impact';
@@ -908,107 +972,143 @@ function inventoryPage() {
   ${sectionRow('보유 제작 소재', '각 재료의 출처는 원정 지도에서 확인할 수 있습니다.','제작소 열기','go-forge')}
   <section class="panel"><div class="bag-materials">${Object.entries(resources).map(([id,r])=>`<div class="bag-material">${resourceIcon(id)}<div><span>${safe(r.name)}</span><div style="font-size:9px;color:var(--text-faint);margin-top:3px">${safe(r.source)}</div></div><strong>${short(state.wallet[id]??0)}</strong></div>`).join('')}</div></section>`;
 }
+
+function characterPage() {
+  const slots=[['weapon','무기'],['armor','방어구'],['accessory','장신구']];
+  const slotMarkup=slots.map(([slot,label])=>{
+    const item=state.inventory.find(x=>x.instanceId===state.equipment[slot]);
+    return '<div class="inspector-slot"><div><strong>'+safe(label)+'</strong><small>'+safe(item?.name??'미착용')+'</small></div><b>'+ (item?'전투력 +'+short(item.power):'비어 있음')+'</b></div>';
+  }).join('');
+  return heading('CHARACTER / VISUAL INSPECT','캐릭터 · 장비 외형 검사',
+    '전신을 확대해 장착 상태를 확인하는 화면입니다. 현재 아트는 임시 SVG이며 최종 캐릭터 디자인은 미확정입니다.')+
+  '<div class="character-inspector">'+
+  '<section class="inspector-stage '+gearClass()+'">'+
+   '<div class="inspector-head"><strong>'+safe(state.player.displayName)+' · LV.'+state.player.level+'</strong><small>임시 모델 / 정식 아트 미연동</small></div>'+
+   '<div class="inspector-figure '+(inspectorZoom?'zoomed':'')+'" aria-label="확대 가능한 캐릭터 전신 모델">'+fighterArt()+'</div>'+
+   '<div class="inspector-controls"><button type="button" data-action="inspect-zoom" class="secondary-button" aria-pressed="'+inspectorZoom+'">'+(inspectorZoom?'전신 보기':'장비 확대 165%')+'</button><button type="button" data-action="navigate" data-id="inventory" class="character-link">장비 장착 및 교체</button></div>'+
+   '<p class="inspector-disclaimer">현재 SVG의 색상·검 외형 변화는 시연용입니다. 정식 아트·직업·의상·펫은 다른 섹션의 확정 데이터를 기다립니다.</p>'+
+  '</section><aside class="inspector-side">'+
+   '<section class="panel"><h2>장착 정보</h2><p class="page-desc">상태 스냅샷 기반 반영 · 외형 모델은 별도 레이어</p><div class="inspector-gear">'+slotMarkup+'</div></section>'+
+   '<section class="panel"><h2>외형 검토 기준</h2>'+
+     '<p class="visual-contract-note">1. 전신 / 장비 확대 구분<br>2. 직업·무기·방어구·펫별 시각 상태 분리<br>3. 아트가 없어도 장착 동작 허용<br>4. 실제 게임 상태는 Core가 확정<br>5. 최종 애니메이션·3D 모델은 미연결</p>'+
+     '<button type="button" data-action="navigate" data-id="battle" class="primary-button full" style="margin-top:15px">자동 사냥 장면 확인</button></section>'+
+  '</aside></div>';
+}
+
+
+const PACK_SIZE=7; // visual fixture only, not an authoritative spawn rule
+const MOB_POSITIONS=Object.freeze([
+ [52,33,.82,2],[74,34,.8,2],[90,48,.9,3],[44,52,.9,4],[66,57,1.05,5],[84,72,.95,6],[56,78,1.06,7]
+]);
+function newMobPack(stage,wave) {
+  return Array.from({length:PACK_SIZE},(_,i)=>({id:'M'+wave+'-'+i,hp:stage.enemyHp,maxHp:stage.enemyHp}));
+}
+function applyPackDamage(pack,action) {
+  const targets=action==='skill'?5:3;
+  const perTarget=action==='skill'?Math.max(34,Math.round(72*1.1)):Math.max(24,Math.round(44*1.1));
+  const next=pack.map(x=>({...x}));
+  const alive=next.filter(x=>x.hp>0).slice(0,targets);
+  let damage=0,defeated=0;
+  for(const mob of alive){const amount=Math.min(mob.hp,perTarget);mob.hp-=amount;damage+=amount;if(mob.hp===0)defeated++;}
+  return {mobs:next,damage,defeated,targetCount:alive.length};
+}
+function mobsMarkup(pack) {
+  return pack.map((m,i)=>{
+    const [x,y,scale,layer]=MOB_POSITIONS[i];
+    const hp=Math.max(0,Math.round(m.hp/m.maxHp*100));
+    return '<div class="mob-unit '+(m.hp<=0?'fallen':'')+'" style="--mx:'+x+'%;--my:'+y+'%;--ms:'+scale+';--layer:'+layer+';--hue:'+(i%3*24)+'deg" data-mob-id="'+safe(m.id)+'" data-mob-hp="'+m.hp+'" aria-hidden="true">'+
+       '<div class="mob-hp"><span style="width:'+hp+'%"></span></div>'+beastArt()+'</div>';
+  }).join('');
+}
+
 async function startStage(stageId) {
   const s = getStage(stageId);
   if (!s || !stageAccess(s,state).canEnter || isBusy()) return notify('입장 조건을 다시 확인하세요.');
   const outcome=await submitCommand('expedition.start.requested',{stageId,expectedPower:totalPower(state)});
   if (!outcome) return;
-  battle = { stageId, enemyHp:s.enemyHp, playerHp:state.player.maxHp, energy:100, round:0, wave:1, waves:2, auto:true, log:'적과 조우했습니다. 자동 전투가 시작됩니다.' };
+  battle = { stageId, mobs:newMobPack(s,1), enemyHp:s.enemyHp*PACK_SIZE, totalKills:0, playerHp:state.player.maxHp, energy:100, round:0, wave:1, waves:2, auto:true, log:'몬스터 무리와 조우했습니다. 광역 자동 사냥이 시작됩니다.' };
   result = null; screen = 'battle'; render();
 }
 
+
 function battlePage() {
-  if (!battle) { screen='expeditions'; return expeditionsPage(); }
+  if(!battle) {screen='expeditions';return expeditionsPage();}
   const s=getStage(battle.stageId);
-  const enemyPercent=Math.max(0,Math.round(battle.enemyHp/s.enemyHp*100));
-  const playerPercent=Math.max(0,Math.round(battle.playerHp/state.player.maxHp*100));
-  const autoText=battle.auto?'자동 전투 진행 중 · 스킬 자동 발동':'전투 연출 일시정지';
-  return [
-    '<div class="battle-shell">',
-    heading('EXPEDITION / AUTO COMBAT VISUAL',s.title+' · 자동 전투','실제 코어 연동 전의 2D 전투 연출 시연입니다. 캐릭터·몬스터·피격 효과는 UI 검토용 임시 아트입니다.'),
-    '<section class="battle-view" aria-label="2D 자동 전투 장면">',
-      '<div class="battle-top"><div><strong>ZONE ',String(s.index).padStart(2,'0'),' / ',safe(s.title),'</strong><small>TIER ',s.tier,' · ',safe(s.feature),'</small></div>',
-        '<button type="button" class="ghost-button" data-action="retreat" ',isBusy()?'disabled':'','>원정 중단</button></div>',
-      '<div class="arena-visual env-',safe(s.environment),'" role="img" aria-label="왼쪽 개척자 캐릭터와 오른쪽 ',safe(s.monster),'가 전투 중인 장면">',
-        '<div class="arena-mountains" aria-hidden="true"></div><div class="arena-floor" aria-hidden="true"></div>',
-        '<div class="arena-center">WAVE ',battle.wave,' / ',battle.waves,' · ROUND ',battle.round,'</div>',
-        '<div class="arena-caption left"><strong>',safe(state.player.displayName),' · LV.',state.player.level,'</strong><div class="healthbar player"><span style="width:',playerPercent,'%"></span></div><span>',battle.playerHp,' / ',state.player.maxHp,' HP</span></div>',
-        '<div class="arena-caption right"><strong>',safe(s.monster),'</strong><div class="healthbar"><span style="width:',enemyPercent,'%"></span></div><span>',Math.max(0,battle.enemyHp),' / ',s.enemyHp,' HP</span></div>',
-        '<div class="arena-shadow player-shadow" aria-hidden="true"></div><div class="arena-shadow monster-shadow" aria-hidden="true"></div>',
-        '<div class="arena-actor player-actor ',gearClass(),'" aria-hidden="true">',fighterArt(),'</div>',
-        '<div class="arena-actor monster-actor" aria-hidden="true">',beastArt(),'</div>',
-      '</div>',
-      '<div class="battle-bottom"><div class="battle-unit">',
-        '<div class="health-caption"><strong>',safe(state.player.displayName),' · LV.',state.player.level,'</strong><span>전투력 ',short(totalPower(state)),'</span></div>',
-        '<div class="health-caption"><span>체력</span><span>',battle.playerHp,' / ',state.player.maxHp,'</span></div>',
-        '<div class="healthbar player"><span style="width:',playerPercent,'%"></span></div>',
-        '<div class="health-caption"><span>기력</span><span>',battle.energy,' / 100</span></div>',
-        '<div class="healthbar energy"><span style="width:',battle.energy,'%"></span></div>',
-      '</div><div class="battle-actions">',
-        '<h3>자동 전투</h3><p class="auto-status">',safe(autoText),'</p>',
-        '<button type="button" class="primary-button" data-action="toggle-auto" ',isBusy()?'disabled':'','>',battle.auto?'일시정지':'전투 재개','</button>',
-        '<div class="battle-log" aria-live="polite">',safe(battle.log),'</div>',
-        '<p class="battle-demo-tag">전투·보상 수치는 시연용 데이터 · 수동 공격 조작 없는 방치형 UX</p>',
-      '</div></div>',
-    '</section></div>'
-  ].join('');
+  const hpPercent=Math.max(0,Math.round(battle.playerHp/state.player.maxHp*100));
+  const alive=battle.mobs.filter(m=>m.hp>0).length;
+  return '<div class="battle-shell">'+
+   heading('EXPEDITION / MULTI TARGET IDLE HUNT',s.title+' · 자동 사냥','다수 몬스터를 광역 공격하는 방치형 전투 UI 시연입니다. 리소스·전투 수치는 확정되지 않았습니다.')+
+   '<section class="battle-view" aria-label="다수 몬스터 자동 사냥 화면">'+
+    '<div class="battle-top"><div><strong>ZONE '+String(s.index).padStart(2,'0')+' · '+safe(s.title)+'</strong><small>스테이지 '+s.tier+' · '+safe(s.feature)+'</small></div><button type="button" class="ghost-button" data-action="retreat" '+(isBusy()?'disabled':'')+'>사냥 중단</button></div>'+
+    '<div class="swarm-field env-'+safe(s.environment)+'" role="group" aria-label="캐릭터 한 명이 여러 몬스터를 광역 공격하는 자동 사냥 장면">'+
+      '<div class="swarm-stats"><div class="swarm-label"><strong>'+safe(state.player.displayName)+' · LV.'+state.player.level+'</strong>HP '+battle.playerHp+' / '+state.player.maxHp+'</div>'+
+       '<div class="swarm-label"><strong>WAVE '+battle.wave+'/'+battle.waves+'</strong>활성 '+alive+'마리 · 처치 '+battle.totalKills+'마리</div></div>'+
+      '<div class="swarm-hero '+gearClass()+'" aria-hidden="true">'+fighterArt()+'</div>'+
+      '<div class="swarm-field-targets" aria-label="화면에 보이는 몬스터 '+PACK_SIZE+'마리">'+mobsMarkup(battle.mobs)+'</div>'+
+      '<div class="aoe-streak" aria-hidden="true"></div>'+
+    '</div>'+
+    '<div class="swarm-legend"><span>광역 자동 공격 · 최대 5개 대상 동시 타격</span><strong>총 처치 '+battle.totalKills+' / '+(battle.waves*PACK_SIZE)+'</strong></div>'+
+    '<div class="battle-bottom"><div class="battle-unit"><div class="health-caption"><strong>캐릭터 생명력</strong><span>'+battle.playerHp+' / '+state.player.maxHp+'</span></div><div class="healthbar player"><span style="width:'+hpPercent+'%"></span></div><div class="health-caption"><span>스킬 기력</span><span>'+battle.energy+' / 100</span></div><div class="healthbar energy"><span style="width:'+battle.energy+'%"></span></div></div>'+
+    '<div class="battle-actions"><h3>방치형 자동 사냥</h3><p class="auto-status">'+(battle.auto?'자동 광역 공격·스킬 발동 중':'자동 사냥 일시정지')+'</p>'+
+       '<button type="button" class="primary-button" data-action="toggle-auto" '+(isBusy()?'disabled':'')+'>'+(battle.auto?'일시정지':'자동 사냥 재개')+'</button>'+
+       '<button type="button" class="character-link" data-action="navigate" data-id="character" style="margin-left:8px">캐릭터 전신 검사</button>'+
+       '<div class="battle-log" aria-live="polite">'+safe(battle.log)+'</div>'+
+    '</div></div><p class="battle-demo-tag" style="padding:14px 2px">광역 피해는 게임 상태 단위로 갱신합니다. 화면에 타격 횟수만큼 개별 모션을 만들지 않습니다.</p>'+
+   '</section></div>';
 }
+
 
 let combatBusy=false;
 const combatSleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
 async function battleAction(action) {
-  if (!battle || screen!=='battle' || isBusy() || combatBusy || modal) return;
-  combatBusy=true;
-  const original=battle;
-  const s=getStage(original.stageId);
-  const nextBattle={...original};
-  let damage=0, log='';
-  try {
-    if(action==='attack'){
-      damage=35;nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-damage);
-      nextBattle.energy=Math.min(100,nextBattle.energy+15);
-      log='자동 기본 공격 · 피해 '+damage;
-    }else if(action==='skill'){
-      if(nextBattle.energy<30)return;
-      damage=62;nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-damage);
-      nextBattle.energy-=30;
-      log='자동 전투 기술 · 피해 '+damage;
-    }else if(action==='potion'){
-      if(state.potions<=0 || nextBattle.playerHp>=state.player.maxHp)return;
+ if(!battle||isBusy()||combatBusy||modal)return;
+ combatBusy=true;
+ const original=battle;
+ const s=getStage(original.stageId);
+ let next={...original,mobs:original.mobs.map(x=>({...x}))};
+ let damage=0, defeated=0,targetCount=0;
+ try{
+   if(action==='potion'){
+      if(state.potions<=0||next.playerHp===state.player.maxHp)return;
       const outcome=await submitCommand('combat.mock.potion',{});
       if(!outcome)return;
-      nextBattle.playerHp=Math.min(state.player.maxHp,nextBattle.playerHp+45);
-      log='자동 회복 물약 · 체력 +45';
-    }else return;
-    emit('combat.mock.action',{stageId:s.id,action,round:nextBattle.round+1,visualWave:nextBattle.wave});
-    nextBattle.round++;
-    if(nextBattle.enemyHp===0){
-      nextBattle.log=log+' · 적 처치!';
-      battle=nextBattle;render();battleImpact(action,damage||45);
-      await combatSleep(750);
-      if(battle!==nextBattle || screen!=='battle') return;
-      if(nextBattle.wave<nextBattle.waves){
-        battle={...nextBattle,wave:nextBattle.wave+1,enemyHp:s.enemyHp,log:'다음 적이 등장했습니다. 자동 전투를 계속합니다.'};
-        render();return;
+      next.playerHp=Math.min(state.player.maxHp,next.playerHp+45);
+      next.log='자동 회복 +45';
+   }else if(action==='skill'||action==='attack'){
+      if(action==='skill'&&next.energy<30)return;
+      const outcome=applyPackDamage(original.mobs,action);
+      next.mobs=outcome.mobs;damage=outcome.damage;defeated=outcome.defeated;targetCount=outcome.targetCount;
+      next.totalKills+=defeated;
+      next.energy=action==='skill'?next.energy-30:Math.min(100,next.energy+15);
+      next.log=(action==='skill'?'광역 전투 기술':'자동 다중 공격')+' · '+targetCount+'개 대상 · 총 피해 '+short(damage)+' · 처치 '+defeated;
+   }else return;
+   emit('combat.mock.action',{stageId:s.id,action,round:next.round+1,visualWave:next.wave,targetCount,damageTotal:damage});
+   next.round++;
+   next.enemyHp=next.mobs.reduce((sum,m)=>sum+m.hp,0);
+   if(next.enemyHp===0){
+      battle=next;if(screen==='battle'){render();battleImpact(action,damage||45);}
+      await combatSleep(600);
+      if(battle!==next)return;
+      if(next.wave<next.waves){
+         battle={...next,wave:next.wave+1,mobs:newMobPack(s,next.wave+1),enemyHp:s.enemyHp*PACK_SIZE,log:'새로운 몬스터 무리가 등장했습니다.'};
+         if(screen==='battle')render();
+         return;
       }
       const completed=await submitCommand('expedition.complete.mock',{stageId:s.id,rewardQuantity:4});
       if(!completed)return;
-      const rewards=completed.meta.reward;
-      emit('expedition.result.mocked',{stageId:s.id,outcome:'victory',rewards});
-      result={stageId:s.id,victory:true,rewards};
-      battle=null;screen='result';render();return;
-    }
-    nextBattle.playerHp=Math.max(0,nextBattle.playerHp-s.enemyDamage);
-    nextBattle.log=log+' · 적 반격 '+s.enemyDamage+' 피해';
-    battle=nextBattle;render();battleImpact(action,damage||45);
-    if(nextBattle.playerHp===0){
-      await combatSleep(650);
-      if(battle!==nextBattle || screen!=='battle')return;
-      emit('expedition.result.mocked',{stageId:s.id,outcome:'defeat',rewards:{}});
+      result={stageId:s.id,victory:true,rewards:completed.meta.reward};
+      emit('expedition.result.mocked',{stageId:s.id,outcome:'victory',rewards:completed.meta.reward});
+      battle=null;if(screen==='battle')screen='result';render();return;
+   }
+   next.playerHp=Math.max(0,next.playerHp-Math.max(2,Math.round(s.enemyDamage*.35)));
+   if(next.playerHp===0){
       result={stageId:s.id,victory:false,rewards:{}};
-      battle=null;screen='result';render();
-    }
-  }finally{combatBusy=false;}
+      emit('expedition.result.mocked',{stageId:s.id,outcome:'defeat',rewards:{}});
+      battle=null;if(screen==='battle')screen='result';render();return;
+   }
+   battle=next;
+   if(screen==='battle'){render();battleImpact(action,damage||45);}
+ }finally{combatBusy=false;}
 }
 
 function resultPage() {
@@ -1039,7 +1139,7 @@ function closeModal() {
 function render() {
   const current = document.activeElement;
   const focusKey = { action: current?.dataset?.action, id: current?.dataset?.id };
-  const content=screen==='home'?homePage():screen==='expeditions'?expeditionsPage():screen==='forge'?forgePage():screen==='inventory'?inventoryPage():screen==='battle'?battlePage():resultPage();
+  const content=screen==='home'?homePage():screen==='expeditions'?expeditionsPage():screen==='forge'?forgePage():screen==='inventory'?inventoryPage():screen==='character'?characterPage():screen==='battle'?battlePage():resultPage();
   app.innerHTML=shell(content);
   if (focusKey.action && !modal) requestAnimationFrame(()=>{
     const candidate=[...app.querySelectorAll('[data-action]')].find(el=>!el.disabled && el.dataset.action===focusKey.action && el.dataset.id===focusKey.id);
@@ -1079,7 +1179,8 @@ async function handleAction(action,id) {
       notify('장비를 장착했습니다. 현재 전투력이 반영되었습니다.');
       render(); return;
     }
-    case 'quick-battle':startStage('S01');return;
+    case 'quick-battle':navigate('battle');return;
+    case 'inspect-zoom':inspectorZoom=!inspectorZoom;render();return;
     case 'toggle-auto':if(battle){battle.auto=!battle.auto;battle.log=battle.auto?'자동 전투를 재개했습니다.':'자동 전투가 일시정지되었습니다.';render();}return;
     case 'battle-attack':battleAction('attack');return;
     case 'battle-skill':battleAction('skill');return;
@@ -1123,10 +1224,12 @@ window.addEventListener('keydown',e=>{
   }
 });
 // Inspection-only test surface; no gameplay authority.
-window.setInterval(()=>{if(screen!=='battle'||!battle||!battle.auto||combatBusy||isBusy()||modal)return;
+window.setInterval(()=>{if(!battle||!battle.auto||combatBusy||isBusy()||modal)return;
   const action=battle.playerHp<=44&&state.potions>0?'potion':battle.energy>=30?'skill':'attack';
   battleAction(action);
 },1600);
+// Show the idle-hunt scene immediately in the standalone preview; authoritative entry stays with mock transport.
+setTimeout(()=>{if(screen==='home'&&!battle&&!isBusy())startStage('S01');},150);
 window.__UI5_PROTOTYPE__={snapshot:()=>structuredClone({state,screen,selectedStageId,selectedRecipeId,battle,result,commands,bridgeStatus}),reset:()=>handleAction('reset'),demo:{failNext:()=>mockTransport.failNextRequest(),bumpRevision:()=>mockTransport.bumpDemoRevision(),read:()=>mockTransport.inspectDemo()}};
 render();
 
