@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1018" />
+  <meta name="description" content="게임 프로젝트 5번 섹션 UI/UX 인터랙티브 프로토타입" />
+  <title>경계의 기록 | UI/UX 프로토타입</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #090e15;
+  --surface: #111a25;
+  --surface-hi: #172332;
+  --surface-muted: #0d1722;
+  --line: #2a3949;
+  --line-soft: #1d2b3a;
+  --text: #edf2f4;
+  --text-muted: #9caab7;
+  --text-faint: #6f8292;
+  --gold: #d9bc83;
+  --gold-bright: #f0d398;
+  --cyan: #8bd4d8;
+  --green: #96d3b0;
+  --warning: #e4a781;
+  --danger: #e7928f;
+  --radius: 16px;
+  font-family: Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', system-ui, sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; color: var(--text); background: var(--bg); }
+button { font: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .57; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 4px; }
+.svg-symbols, .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+.skip-link { position: fixed; z-index: 1000; left: 16px; top: -70px; opacity: 0; padding: 10px 14px; background: var(--gold); color: #10151b; }
+body.keyboard-navigation .skip-link:focus-visible { top: 16px; opacity: 1; }
+.icon { width: 19px; height: 19px; flex: none; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.app-shell { min-height: 100dvh; display: grid; grid-template-columns: 234px minmax(0,1fr); background: radial-gradient(ellipse at 45% -40%, #1c3040 0, transparent 62%), var(--bg); }
+.sidebar { position: sticky; top: 0; height: 100dvh; min-height: 680px; border-right: 1px solid #263340; background: rgba(10,17,25,.92); display: flex; flex-direction: column; padding: 35px 17px 24px; }
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 8px 39px; }
+.brand-mark { width: 40px; height: 44px; border: 1px solid #ac9268; color: var(--gold); display: grid; place-items: center; font-size: 24px; clip-path: polygon(50% 0,100% 21%,100% 78%,50% 100%,0 78%,0 21%); background: #1f2529; }
+.brand-mark b { font-family: Georgia,serif; font-weight: 500; }
+.brand-text strong { display: block; font-size: 17px; letter-spacing: -.055em; font-weight: 750; }
+.brand-text small { display: block; color: var(--gold); font-family: Georgia,serif; font-size: 9px; letter-spacing: .23em; margin-top: 3px; }
+.nav-caption { padding: 0 14px; margin: 0 0 13px; font-size: 10px; font-weight: 700; color: var(--text-faint); letter-spacing: .2em; }
+.main-nav { display: grid; gap: 6px; }
+.nav-button { width: 100%; border: 1px solid transparent; background: transparent; color: #9aa9b9; border-radius: 9px; min-height: 48px; display: flex; align-items: center; gap: 14px; padding: 0 14px; text-align: left; font-size: 13px; font-weight: 650; }
+.nav-button:hover { background: #162331; color: var(--text); }
+.nav-button.active { color: var(--gold-bright); background: #272922; border-color: #494436; }
+.nav-button.active::after { content: ''; width: 4px; height: 4px; border-radius: 50%; margin-left: auto; background: var(--gold); }
+.sidebar-bottom { margin-top: auto; border-top: 1px solid var(--line-soft); padding-top: 20px; }
+.side-status { border: 1px solid #2b3d49; border-radius: 12px; background: linear-gradient(125deg,#1a2833,#121a22); padding: 16px; margin-bottom: 13px; }
+.side-status .tiny { color: var(--text-muted); font-size: 10px; letter-spacing: .07em; }
+.side-status strong { display: block; font-size: 25px; font-family: Georgia,serif; font-weight: 400; letter-spacing: -.02em; margin-top: 6px; }
+.side-status strong em { font-style: normal; font-family: inherit; font-size: 11px; color: var(--text-faint); }
+.side-progress { background: #273541; height: 4px; margin-top: 13px; border-radius: 5px; overflow: hidden; }
+.side-progress span { display: block; height: 100%; background: var(--gold); transition: width .35s; }
+.settings-link { width: 100%; padding: 11px 12px; display: flex; align-items: center; gap: 12px; border: 0; background: transparent; color: var(--text-muted); text-align: left; font-size: 12px; }
+.settings-link:hover { color: white; }
+.sidebar-note { color: #62798a; font-size: 9px; letter-spacing: .07em; padding: 11px 12px 0; }
+.main-content { min-width: 0; max-width: 1600px; width: 100%; margin: auto; padding: 30px clamp(22px,4.3vw,73px) 80px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 31px; }
+.breadcrumb { display: flex; align-items: center; gap: 9px; color: #8596a5; font-size: 12px; }
+.breadcrumb span:last-child { color: #d5dde1; }
+.breadcrumb .icon { width: 13px; height: 13px; }
+.top-actions { display: flex; align-items: center; gap: 13px; }
+.world-pill { padding: 9px 14px; border: 1px solid #2d4045; border-radius: 999px; color: #acbbb9; background: #101e24; font-size: 11px; white-space: nowrap; }
+.world-pill i { display: inline-block; background: #89c8b3; border-radius: 50%; width: 5px; height: 5px; margin-right: 7px; vertical-align: 2px; }
+.avatar { background: #2d3434; border: 1px solid #727059; color: var(--gold-bright); border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; font-family: Georgia,serif; font-size: 17px; }
+.page-header { margin-bottom: 29px; }
+.eyebrow { text-transform: uppercase; color: var(--gold); font: 600 10px/1.4 Georgia,serif; letter-spacing: .26em; }
+h1,h2,h3,h4,p { margin-top: 0; }
+h1 { margin-bottom: 9px; font-size: clamp(27px,3.5vw,41px); line-height: 1.3; letter-spacing: -.06em; font-weight: 750; }
+h2 { font-size: 19px; letter-spacing: -.045em; margin: 0; }
+h3 { font-size: 15px; letter-spacing: -.03em; margin: 0; }
+.page-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin: 0; }
+.hero { position: relative; overflow: hidden; border: 1px solid #43515b; border-radius: 16px; min-height: 305px; display: flex; align-items: center; padding: 41px clamp(26px,5.4vw,68px); isolation: isolate; background: linear-gradient(100deg,rgba(6,13,22,.96) 4%,rgba(9,19,30,.84) 45%,rgba(12,22,32,.3) 100%), linear-gradient(160deg,#1e3646,#394e4a 43%,#101d29 80%); }
+.hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 77% 29%,rgba(219,191,130,.48),transparent 14%), radial-gradient(ellipse at 76% 43%,rgba(81,127,132,.25),transparent 30%), linear-gradient(155deg,transparent 56%,#09131c 56.2% 64%,transparent 64.2%), linear-gradient(165deg,transparent 48%,#162f3b 48.2% 60%,transparent 60.2%),linear-gradient(195deg,transparent 65%,#0e1f2c 65.2% 75%,transparent 75.2%); opacity:.93; }
+.hero::after { content: ''; position:absolute; right:5%; bottom:-120px; width:365px; height:330px; border:1px solid rgba(215,188,132,.22); border-radius:50%; box-shadow: 0 0 0 55px rgba(223,199,149,.035),0 0 0 108px rgba(223,199,149,.018); z-index:-1; }
+.hero-content { max-width: 540px; }
+.hero .eyebrow { font-size: 11px; margin-bottom: 14px; }
+.hero h2 { font-size: clamp(25px,3vw,37px); line-height: 1.38; font-weight: 740; margin-bottom: 15px; }
+.hero p { color: #aebdc5; line-height: 1.8; font-size: 13px; max-width: 420px; margin-bottom: 24px; }
+.hero-footer { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.primary-button, .secondary-button, .ghost-button, .small-button { border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border-radius: 9px; transition: background .18s,border-color .18s,transform .18s; font-weight: 700; }
+.primary-button { min-height: 44px; background: var(--gold); color: #18212a; padding: 0 20px; font-size: 12px; border-color: var(--gold); }
+.primary-button:hover:not(:disabled) { background: #f0d7a2; transform: translateY(-1px); }
+.secondary-button { min-height: 43px; background: #20303e; border-color: #405462; color: #e5ebec; padding: 0 18px; font-size: 12px; }
+.secondary-button:hover:not(:disabled) { background: #2d4353; }
+.ghost-button { background: transparent; color: var(--gold); border-color: #716248; padding: 0 16px; min-height: 40px; font-size: 11px; }
+.ghost-button:hover:not(:disabled) { background: rgba(218,188,132,.08); }
+.small-button { font-size: 11px; border: 1px solid #425464; background:#1c2b39; color:#dbe3e9; padding: 8px 12px; min-height: 33px; }
+.small-button:hover:not(:disabled) { background:#2b4051; }
+.text-button { padding: 7px 0; color: var(--gold); background: none; border:0; display: inline-flex; gap: 7px; align-items: center; font-size: 12px; font-weight: 650; }
+.text-button:hover { color: var(--gold-bright); }
+.section-row { display: flex; align-items:center; justify-content: space-between; gap: 20px; margin: 31px 0 18px; }
+.section-row p { margin: 5px 0 0; color:var(--text-faint); font-size: 11px; }
+.summary-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 13px; margin-top: 16px; }
+.summary-tile { border:1px solid var(--line); background: linear-gradient(145deg,#192633,#131c28); padding: 21px 23px; border-radius: 12px; min-height: 120px; }
+.summary-tile small { color:var(--text-muted); font-size:11px; display:flex; gap:8px; align-items:center; }
+.summary-tile .icon { color: var(--gold); width: 16px; height: 16px; }
+.summary-tile strong { display:block; margin-top: 15px; font: 400 31px/1 Georgia,serif; }
+.summary-tile strong span { color:var(--text-muted); font: 500 12px/1.2 system-ui,sans-serif; margin-left:8px; }
+.home-bottom { display: grid; grid-template-columns: 1.35fr .85fr; gap: 17px; }
+.panel { background: linear-gradient(145deg,#16212d,#111b26); border:1px solid var(--line); border-radius: var(--radius); padding: 22px; min-width: 0; }
+.panel-head { display:flex; justify-content:space-between; align-items:start; gap:14px; margin-bottom: 22px; }
+.panel-head small { display:block; font-size:11px; color:var(--text-muted); margin-top: 7px; }
+.progress-track { margin: 12px 0 8px; height: 7px; background: #283746; border-radius:10px; overflow:hidden; }
+.progress-track span { display:block; height:100%; background: linear-gradient(90deg,#9b9e77,var(--gold)); border-radius:10px; }
+.checkpoint { display:flex; justify-content:space-between; color:var(--text-muted); font-size:11px; margin-top: 12px; }
+.zone-line { display:flex; align-items:center; gap:13px; border-bottom:1px solid var(--line-soft); padding: 15px 0; }
+.zone-line:last-child { border:0; padding-bottom:0; }
+.zone-line .zone-dot { height:36px; width:36px; border:1px solid #3d5660; background:#273d46; color:var(--gold); display:grid; place-items:center; border-radius:9px; font:500 14px Georgia,serif; }
+.zone-line strong { font-size:12px; display:block; }
+.zone-line small { font-size:10px; color:var(--text-muted); display:block; margin-top: 5px; }
+.zone-line .line-state { margin-left:auto; font-size:10px; color:var(--gold); }
+.tag { border: 1px solid #444f52; border-radius:4px; font-size:10px; padding:4px 6px; color:#b6c6c5; white-space:nowrap; }
+.tag.gold { background:rgba(216,183,115,.08); color:var(--gold); border-color:#685b3f; }
+.tag.green { color:#9fdbb8; border-color:#345f4f; background:#19342b; }
+.tag.red { color:#e6a7a0; border-color:#704840; background:#312326; }
+.tag.gray { color:#9cabb7; }
+.stage-grid { display:grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap:16px; }
+.stage-card { min-width:0; padding:0; overflow:hidden; text-align:left; background: #121e2a; border:1px solid #31404e; border-radius:14px; color:var(--text); display:flex; flex-direction:column; transition: border-color .2s, transform .2s; }
+.stage-card:hover { border-color:#b79c68; transform:translateY(-2px); }
+.stage-card.selected { border-color:var(--gold); box-shadow: inset 0 0 0 1px rgba(216,187,131,.15),0 0 0 1px rgba(216,187,131,.12); }
+.stage-card.locked .stage-art { filter:saturate(.5) brightness(.65); }
+.stage-art { min-height:142px; position:relative; overflow:hidden; display:flex; align-items:start; justify-content:space-between; padding:13px; isolation:isolate; background:#223f46; }
+.stage-art::before { content:''; position:absolute; inset:0; z-index:-2; background: radial-gradient(ellipse at 75% 28%,rgba(233,218,169,.66) 0%,transparent 16%),linear-gradient(160deg,transparent 48%,rgba(5,13,23,.36) 48.5% 60%,transparent 60.3%),linear-gradient(155deg,transparent 35%,rgba(5,13,23,.66) 36% 57%,transparent 57.3%); }
+.stage-art::after { content:''; position:absolute; z-index:-1; width:105%; height:110px; transform:rotate(-15deg); right:-34%; bottom:-75px; border:1px solid rgba(230,217,182,.38); border-radius:50%; box-shadow:0 0 0 23px rgba(230,217,182,.04),0 0 0 48px rgba(230,217,182,.027); }
+.art-cracks { background:linear-gradient(145deg,#45616a,#152c3b 62%,#17252d); }
+.art-bog { background:linear-gradient(135deg,#465d50,#182f32 70%,#13272e); }
+.art-forge { background:linear-gradient(135deg,#8a5541,#4b302d 65%,#1b2833); }
+.art-ruins { background:linear-gradient(135deg,#5b556b,#282c44 63%,#202431); }
+.art-stars { background:linear-gradient(135deg,#3e5c7b,#223551 65%,#101e32); }
+.art-abyss { background:linear-gradient(135deg,#544764,#29243d 65%,#161825); }
+.art-no { background:rgba(8,15,24,.5); border:1px solid rgba(216,223,223,.2); padding:5px 8px; font:11px Georgia,serif; letter-spacing:.08em; }
+.art-state { background:rgba(10,15,22,.62); border:1px solid rgba(225,222,208,.18); border-radius:4px; padding:4px 7px; font-size:10px; }
+.stage-copy { padding:18px; flex:1; }
+.stage-copy .stage-zone { color:var(--gold); font-size:10px; margin-bottom:7px; letter-spacing:.06em; }
+.stage-copy h3 { font-size:16px; margin-bottom:7px; }
+.stage-copy .stage-sub { color:var(--text-muted); font-size:11px; line-height:1.5; min-height:32px; }
+.stage-meta { border-top:1px solid var(--line-soft); display:flex; justify-content:space-between; gap:6px; padding-top:12px; margin-top:14px; color:var(--text-muted); font-size:10px; }
+.stage-meta strong { color:#d1dddf; }
+.details-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(270px,.85fr); gap:17px; margin-top:18px; }
+.detail-feature { display:flex; align-items:center; gap:11px; border:1px solid #3b4b59; background:#1a2b36; border-radius:10px; padding:13px 16px; margin:17px 0; color:#b7c5cd; font-size:12px; }
+.detail-feature .icon { color:var(--gold); }
+.detail-line { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line-soft); font-size:12px; }
+.detail-line:last-child { border-bottom:0; }
+.detail-line span:first-child { color:var(--text-muted); }
+.detail-line strong { font-size:12px; font-weight:650; }
+.resource-label { display:flex; align-items:center; gap:9px; }
+.resource-emblem { height:29px; width:29px; border:1px solid #5c675d; border-radius:7px; background:#293b3b; color:var(--gold); display:inline-grid; place-items:center; font-size:17px; }
+.resource-emblem.green { color:var(--green); border-color:#486b54; background:#24382f; }
+.resource-emblem.orange { color:#efb380; border-color:#79583f; background:#3c2d2a; }
+.resource-emblem.cyan { color:#8fdbe2; border-color:#47727a; background:#243c43; }
+.resource-emblem.violet { color:#bfb1fa; border-color:#605479; background:#302b42; }
+.resource-emblem.blue { color:#99c3f3; border-color:#46637a; background:#263649; }
+.resource-emblem.gold { color:#f6d592; border-color:#6b603d; background:#3c3528; }
+.full { width:100%; }
+.warning-box { font-size:11px; line-height:1.65; border-left:2px solid #a28b5e; background:#272b2a; padding:10px 13px; margin:14px 0; color:#d7caaa; }
+.recipe-layout { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(300px,.85fr); gap:18px; align-items:start; }
+.recipe-list { display:grid; gap:10px; }
+.recipe-button { border:1px solid #2d4050; border-radius:12px; display:flex; align-items:center; text-align:left; color:var(--text); background:#15212d; padding:16px; gap:15px; }
+.recipe-button:hover { border-color:#9e8761; }
+.recipe-button.active { background:#242b2d; border-color:var(--gold); }
+.item-symbol { min-width:55px; height:58px; border:1px solid #5b5e53; background: radial-gradient(circle at 50% 20%,#454b44,#20282a); color:var(--gold); display:grid; place-items:center; border-radius:10px; font:27px Georgia,serif; }
+.item-symbol .icon { width:28px; height:28px; }
+.recipe-button .recipe-text { flex:1; min-width:0; }
+.recipe-button strong { font-size:13px; display:block; margin-bottom:6px; }
+.recipe-button small { display:block; font-size:11px; color:var(--text-muted); }
+.recipe-button .icon { color:var(--text-muted); }
+.recipe-button .tag { align-self:start; }
+.sticky-panel { position:sticky; top:22px; }
+.item-showcase { height:180px; border:1px solid #42515c; border-radius:12px; background: radial-gradient(ellipse at 50% 40%,#3b4d4a,transparent 50%), radial-gradient(ellipse at 50% 105%,#293840,transparent 55%), #16232d; display:grid; place-items:center; margin-bottom:22px; position:relative; }
+.item-showcase::before,.item-showcase::after { content:''; position:absolute; width:136px; height:136px; border:1px solid #58615a; border-radius:50%; opacity:.5; }
+.item-showcase::after { width:100px; height:100px; transform:rotate(45deg); border-radius:7px; }
+.item-showcase .icon { width:65px; height:65px; color:var(--gold-bright); z-index:1; }
+.showcase-rune { z-index:1; font-size:63px; color:var(--gold-bright); font-family:Georgia,serif; }
+.material-row { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line-soft); padding:11px 0; gap:10px; }
+.material-row:last-child { border:0; }
+.material-name { display:flex; align-items:center; gap:9px; font-size:12px; }
+.material-qty { font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.material-qty.missing { color:var(--danger); }
+.material-qty.enough { color:var(--green); }
+.bag-layout { display:grid; grid-template-columns:1fr 1fr; gap:17px; }
+.equipment-slots { display:grid; gap:10px; }
+.equipment-slot { display:flex; align-items:center; gap:13px; border:1px solid #304253; border-radius:10px; background:#172635; padding:14px; min-height:80px; }
+.equipment-slot strong { display:block; font-size:12px; margin-top:4px; }
+.equipment-slot small { font-size:10px; color:var(--text-muted); }
+.equipment-slot b { margin-left:auto; font-size:12px; color:var(--gold); }
+.inventory-card { display:flex; gap:11px; align-items:center; border-bottom:1px solid var(--line-soft); padding:13px 0; }
+.inventory-card:last-child { border:0; }
+.inventory-card .item-symbol { min-width:42px; width:42px; height:42px; }
+.inventory-card .item-symbol .icon { width:20px; height:20px; }
+.inventory-card strong { display:block; font-size:12px; }
+.inventory-card small { color:var(--text-muted); font-size:10px; }
+.inventory-card .small-button { margin-left:auto; }
+.bag-materials { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.bag-material { display:flex; align-items:center; gap:10px; padding:10px; background:#192835; border:1px solid #304351; border-radius:9px; }
+.bag-material strong { margin-left:auto; font-size:12px; }
+.bag-material span:not(.resource-emblem) { font-size:10px; }
+.battle-shell { min-height:calc(100dvh - 140px); display:flex; flex-direction:column; }
+.battle-view { position:relative; overflow:hidden; border-radius:17px; border:1px solid #455160; flex:1; min-height:440px; background: radial-gradient(ellipse at 52% 65%,rgba(122,103,82,.3),transparent 44%),linear-gradient(180deg,#263c4a,#101a27 72%); padding:23px; isolation:isolate; }
+.battle-view::before { content:''; position:absolute; inset:0; z-index:-1; background:radial-gradient(ellipse at 52% 18%,rgba(222,195,147,.23),transparent 20%),linear-gradient(155deg,transparent 45%,#192c36 46% 59%,transparent 60%),linear-gradient(205deg,transparent 49%,#152632 50% 63%,transparent 64%); }
+.battle-view::after { content:''; position:absolute; bottom:-110px; left:-15%; width:130%; height:210px; border-radius:50%; background:#111923; box-shadow:0 -30px 40px rgba(20,21,24,.6); z-index:-1; }
+.battle-top { display:flex; justify-content:space-between; align-items:start; gap:20px; }
+.battle-top strong { font-size:13px; display:block; }
+.battle-top small { font-size:10px; color:var(--gold); display:block; margin-top:5px; }
+.enemy-target { margin:auto; width:min(90%,450px); text-align:center; position:relative; padding-top:30px; }
+.enemy-avatar { width:170px; height:194px; margin:25px auto 12px; position:relative; display:grid; place-items:center; color:var(--gold); filter:drop-shadow(0 7px 24px #05080b); }
+.enemy-avatar::before { content:''; position:absolute; background:linear-gradient(150deg,#4d5359,#191f2b); width:95px; height:138px; border:1px solid #747362; border-radius:43% 43% 23% 23%; clip-path:polygon(20% 10%,50% 0,80% 10%,95% 83%,63% 100%,37% 100%,5% 83%); }
+.enemy-avatar::after { content:''; position:absolute; top:52px; width:38px; height:7px; border-top:2px solid #e5b883; box-shadow:0 0 19px #dba66c; border-radius:50%; }
+.enemy-avatar span { position:absolute; top:97px; font:48px Georgia,serif; }
+.healthbar { height:10px; overflow:hidden; border-radius:7px; background:#373239; border:1px solid #48464b; }
+.healthbar span { display:block; height:100%; background:linear-gradient(90deg,#b25e59,#e2a394); transition:width .28s; }
+.healthbar.player span { background:linear-gradient(90deg,#599c87,#9ddbb9); }
+.healthbar.energy span { background:linear-gradient(90deg,#64799e,#9bb5e5); }
+.health-caption { font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; margin-bottom:8px; }
+.battle-bottom { margin-top:auto; display:grid; grid-template-columns:1fr 1.45fr; gap:16px; }
+.battle-unit,.battle-actions { border:1px solid #384956; border-radius:13px; background:rgba(12,21,31,.93); padding:19px; backdrop-filter:blur(5px); }
+.battle-actions h3 { margin-bottom:13px; }
+.action-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.action-grid button { min-height:67px; display:flex; flex-direction:column; align-items:center; gap:8px; font-size:11px; padding:10px 5px; }
+.action-grid .icon { width:23px; height:23px; }
+.battle-log { font-size:11px; color:var(--gold); padding-top:12px; min-height:35px; }
+.battle-unit .healthbar { margin-bottom:12px; }
+.result-layout { max-width:640px; margin:40px auto; }
+.result-badge { width:71px; height:71px; display:grid; place-items:center; border:1px solid #a38a59; border-radius:50%; margin:0 auto 20px; color:var(--gold); font-size:35px; }
+.result-title { text-align:center; font-size:32px; }
+.result-desc { text-align:center; color:var(--text-muted); font-size:12px; line-height:1.8; }
+.result-rewards { border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:13px 0; margin:27px 0; }
+.result-actions { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+.footer { display:flex; justify-content:space-between; gap:12px; align-items:center; color:#627789; font-size:10px; margin-top:35px; }
+.toast { position:fixed; right:24px; bottom:24px; z-index:100; max-width:min(420px,calc(100vw - 40px)); border:1px solid #947a4d; background:#2b2c29; padding:14px 18px; color:#f0dfb9; box-shadow:0 18px 50px #0009; border-radius:10px; font-size:12px; line-height:1.6; }
+.modal-backdrop { position:fixed; inset:0; background:rgba(1,6,12,.79); display:grid; place-items:center; z-index:99; padding:20px; }
+.modal { width:min(100%,460px); border:1px solid #59646a; background:#16232e; border-radius:14px; padding:26px; box-shadow:0 25px 100px #000b; }
+.modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+.modal p { font-size:12px; line-height:1.9; color:var(--text-muted); }
+.modal .close { width:31px; height:31px; display:grid; place-items:center; border:1px solid #344856; background:#1e2c39; color:#ddd; border-radius:7px; }
+.settings-row { display:flex; justify-content:space-between; gap:15px; border-top:1px solid var(--line-soft); padding:14px 0; font-size:12px; }
+.settings-row span:last-child { color:var(--text-muted); }
+.placeholder-disclaimer { color:#8296a5; font-size:10px; line-height:1.6; }
+@media (min-width:1400px) { .stage-art { min-height:165px; } }
+@media (max-width:1130px) { .stage-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .home-bottom { grid-template-columns:1fr; } .recipe-layout { grid-template-columns:1fr; } .sticky-panel { position:static; } }
+@media (max-width:800px) { .app-shell { grid-template-columns:1fr; } .sidebar { z-index:50; height:auto; min-height:0; position:fixed; bottom:0; top:auto; left:0; right:0; padding:0 6px env(safe-area-inset-bottom); border-right:0; border-top:1px solid #4c5a64; background:rgba(11,19,28,.97); backdrop-filter:blur(14px); } .brand,.nav-caption,.sidebar-bottom { display:none; } .main-nav { grid-template-columns:repeat(4,1fr); gap:0; } .nav-button { min-height:66px; flex-direction:column; gap:4px; justify-content:center; align-items:center; padding:8px 1px; border-radius:7px; font-size:10px; } .nav-button .icon { width:20px; height:20px; } .nav-button.active::after { display:none; } .main-content { padding:22px 19px calc(100px + env(safe-area-inset-bottom)); } .topbar { padding-bottom:25px; } .top-actions { gap:8px; } .world-pill { padding:7px 10px; font-size:10px; } .stage-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .details-layout { grid-template-columns:1fr; } .bag-layout { grid-template-columns:1fr; } .battle-shell { min-height:calc(100dvh - 200px); } .footer { margin-top:28px; } .toast { right:12px; bottom:85px; } }
+@media (max-width:560px) { h1 { font-size:27px; } .hero { min-height:330px; padding:26px 23px; align-items:flex-start; } .hero h2 { font-size:27px; } .hero::after { right:-45%; bottom:-180px; } .summary-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; } .summary-tile { padding:14px 10px; min-height:98px; } .summary-tile small { font-size:10px; } .summary-tile small .icon { display:none; } .summary-tile strong { font-size:24px; margin-top:14px; } .summary-tile strong span { display:block; font-size:9px; margin-left:0; margin-top:5px; } .stage-grid { grid-template-columns:1fr 1fr; gap:10px; } .stage-art { min-height:105px; } .stage-copy { padding:12px; } .stage-copy h3 { font-size:14px; } .stage-copy .stage-sub { font-size:10px; min-height:42px; } .stage-meta { flex-direction:column; gap:5px; } .section-row { align-items:start; } .section-row .text-button { flex:none; font-size:11px; } .panel { padding:17px; } .bag-materials { grid-template-columns:1fr; } .battle-view { min-height:550px; padding:14px; } .battle-top { gap:8px; } .enemy-target { width:100%; padding-top:10px; } .enemy-avatar { width:110px; height:145px; margin:10px auto; } .enemy-avatar::before { transform:scale(.76); } .enemy-avatar::after { top:40px; } .enemy-avatar span { top:74px; font-size:37px; } .battle-bottom { grid-template-columns:1fr; gap:8px; } .battle-unit,.battle-actions { padding:12px; } .battle-unit .healthbar { margin-bottom:7px; } .battle-actions h3 { display:none; } .action-grid button { min-height:57px; font-size:10px; gap:4px; } .action-grid .icon { width:19px; height:19px; } .battle-log { padding-top:6px; } }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition-duration:.01ms!important; animation-duration:.01ms!important; scroll-behavior:auto!important; } }
+/* UI5-005: async command boundary states. No server state is implied here. */
+.connection-banner { display:flex; align-items:center; justify-content:space-between; gap:14px; border:1px solid #465b68; border-radius:12px; background:#142733; padding:14px 17px; margin-bottom:22px; font-size:12px; line-height:1.7; }
+.connection-banner.is-pending { color:var(--cyan); justify-content:flex-start; }
+.connection-banner.is-error { border-color:#9e655c; background:#2b2026; color:#f0c6b5; }
+.connection-banner strong { font-size:12px; }
+.connection-banner p { margin:2px 0 0; color:#e1b8ab; }
+.connection-banner .secondary-button { flex-shrink:0; }
+.status-spinner { display:inline-block; width:16px; height:16px; border-radius:50%; border:2px solid #4a7883; border-top-color:var(--cyan); animation:ui5-spinner .8s linear infinite; }
+@keyframes ui5-spinner { to { transform:rotate(360deg); } }
+@media (max-width:560px) { .connection-banner.is-error { flex-direction:column; align-items:stretch; } .connection-banner .secondary-button { width:100%; } }
+/* UI5-006: craft material provenance and mobile settings access */
+.material-source { display:flex; align-items:center; gap:4px; font-size:10px; border:0; padding:5px 0 0; background:transparent; text-align:left; color:var(--cyan); text-decoration:underline; text-underline-offset:3px; }
+.material-source:hover { color:#c2f7f5; }
+.material-source .icon { width:12px; height:12px; }
+.material-common { display:block; font-size:10px; padding-top:5px; color:var(--text-muted); }
+.empty-state { color:var(--text-muted); font-size:12px; line-height:1.8; }
+.mobile-settings { display:none; min-width:40px; min-height:40px; border:1px solid var(--line); background:var(--surface); border-radius:9px; color:var(--text); place-items:center; }
+@media (max-width:800px) { .mobile-settings { display:grid; } }
+@media (max-width:560px) { .topbar .avatar { display:none; } }
+
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">본문으로 이동</a>
+  <svg aria-hidden="true" class="svg-symbols" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2zM9 3v16M15 5v16"/></symbol>
+    <symbol id="i-forge" viewBox="0 0 24 24"><path d="M3 7h18l-2 5h-6v4h4v4H7v-4h4v-4H5z"/><path d="M8 3h8M5 3h1"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l2 13H3zM9 8V6a3 3 0 0 1 6 0v2M8 13h8"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M10 2h4l.7 2.3 2 1.2 2.4-.6 2 3.5-1.7 1.8v2.6l1.7 1.8-2 3.5-2.4-.6-2 1.2L14 22h-4l-.7-2.3-2-1.2-2.4.6-2-3.5 1.7-1.8v-2.6L2.9 9.4l2-3.5 2.4.6 2-1.2z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 2 9 4v5c0 6-3.5 9-9 11-5.5-2-9-5-9-11V6z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 2.3 7.7L22 12l-7.7 2.3L12 22l-2.3-7.7L2 12l7.7-2.3z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/></symbol>
+    <symbol id="i-potion" viewBox="0 0 24 24"><path d="M9 2h6v5l4 5v7a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-7l4-5zM9 7h6M6 14h12"/></symbol>
+    <symbol id="i-sword" viewBox="0 0 24 24"><path d="m4 20 5-5m-5-5 10 10M7 13 18 2l4 4-11 11"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9h4l6-5v16l-6-5H4zM18 9c2 2 2 4 0 6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
+  </svg>
+  <div id="app" class="app-shell">
+    <noscript>이 프로토타입은 JavaScript가 필요합니다.</noscript>
+  </div>
+  <div id="announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<script>
+/**
+ * UI-only, deterministic mock domain model.
+ * NOT authoritative game economy, combat, unlock logic, or server state.
+ * All displayed values are fixtures pending confirmation by systems/content/data owners.
+ */
+const CONTRACT_VERSION = '0.1.0-ui-prototype';
+
+const resources = Object.freeze({
+  scrap: { name: '고철 부품', symbol: '◆', source: '공통 보상', tone: 'neutral' },
+  fissureIron: { name: '균열철', symbol: '⬡', source: '균열 초입 전용', tone: 'cyan' },
+  bogSap: { name: '늪빛 수액', symbol: '◈', source: '침묵의 늪 전용', tone: 'green' },
+  emberCrystal: { name: '적열 결정', symbol: '✦', source: '붉은 용광로 전용', tone: 'orange' },
+  memoryShard: { name: '기억석 파편', symbol: '✧', source: '망각의 회랑 전용', tone: 'violet' },
+  nebulaAlloy: { name: '성운 합금', symbol: '✺', source: '별추락 협곡 전용', tone: 'blue' },
+  abyssCore: { name: '심연핵', symbol: '✷', source: '심연의 왕좌 전용', tone: 'gold' },
+});
+
+// Stage row shape is stable but all fixture contents are provisional.
+const stages = Object.freeze([
+  { id: 'S01', index: 1, zone: '북부 경계', title: '균열 초입', subtitle: '균열이 처음 모습을 드러낸 폐허', tier: 1, recommendedPower: 120, exclusiveResourceId: 'fissureIron', monster: '균열 포식자', enemyHp: 90, enemyDamage: 12, rewardMin: 3, rewardMax: 5, feature: '균열 안정도', environment: 'cracks' },
+  { id: 'S02', index: 2, zone: '침수 지대', title: '침묵의 늪', subtitle: '물안개 아래 잠든 오염의 흔적', tier: 2, recommendedPower: 190, exclusiveResourceId: 'bogSap', monster: '잠식된 수호자', enemyHp: 125, enemyDamage: 17, rewardMin: 3, rewardMax: 5, feature: '오염 누적', environment: 'bog' },
+  { id: 'S03', index: 3, zone: '열지대', title: '붉은 용광로', subtitle: '꺼지지 않는 불길과 쇳물의 통로', tier: 3, recommendedPower: 260, exclusiveResourceId: 'emberCrystal', monster: '화로의 감시자', enemyHp: 165, enemyDamage: 23, rewardMin: 3, rewardMax: 5, feature: '과열', environment: 'forge' },
+  { id: 'S04', index: 4, zone: '유적 심층', title: '망각의 회랑', subtitle: '발자국마저 지워지는 회랑', tier: 4, recommendedPower: 360, exclusiveResourceId: 'memoryShard', monster: '기억 수집자', enemyHp: 220, enemyDamage: 29, rewardMin: 3, rewardMax: 5, feature: '기억 단절', environment: 'ruins' },
+  { id: 'S05', index: 5, zone: '상층 협곡', title: '별추락 협곡', subtitle: '별의 파편이 퇴적된 절벽', tier: 5, recommendedPower: 480, exclusiveResourceId: 'nebulaAlloy', monster: '혜성의 그림자', enemyHp: 275, enemyDamage: 35, rewardMin: 3, rewardMax: 5, feature: '중력 변동', environment: 'stars' },
+  { id: 'S06', index: 6, zone: '심연 중심', title: '심연의 왕좌', subtitle: '끝없는 밤의 중심에 놓인 자리', tier: 6, recommendedPower: 700, exclusiveResourceId: 'abyssCore', monster: '심연의 군주', enemyHp: 340, enemyDamage: 43, rewardMin: 3, rewardMax: 5, feature: '심연 잠식', environment: 'abyss' },
+]);
+
+const recipes = Object.freeze([
+  { id: 'R01', name: '선봉의 장검', kind: 'weapon', kindLabel: '무기', rarity: '일반', power: 45, description: '균열철을 단조해 만든 안정적인 초급 무기.', cost: { fissureIron: 6, scrap: 3 }, tag: '초기 성장' },
+  { id: 'R02', name: '이끼결 전투복', kind: 'armor', kindLabel: '방어구', rarity: '희귀', power: 70, description: '늪빛 수액이 스며든 재생 섬유 장비.', cost: { bogSap: 4, fissureIron: 2 }, tag: '2단계 전용 소재' },
+  { id: 'R03', name: '화염 문장 반지', kind: 'accessory', kindLabel: '장신구', rarity: '희귀', power: 100, description: '적열 결정의 열기를 봉인한 전투 인장.', cost: { emberCrystal: 5, bogSap: 3 }, tag: '3단계 전용 소재' },
+  { id: 'R04', name: '기억 인도기', kind: 'accessory', kindLabel: '장신구', rarity: '영웅', power: 220, description: '사라진 기억을 탐지하는 유물.', cost: { memoryShard: 6, emberCrystal: 2 }, tag: '4단계 전용 소재' },
+  { id: 'R05', name: '성운 쌍검', kind: 'weapon', kindLabel: '무기', rarity: '전설', power: 320, description: '별추락 협곡의 금속으로 벼린 쌍검.', cost: { nebulaAlloy: 8, memoryShard: 4 }, tag: '5단계 전용 소재' },
+  { id: 'R06', name: '심연의 인장', kind: 'accessory', kindLabel: '장신구', rarity: '유물', power: 350, description: '심연핵을 안정화해 봉인한 증표.', cost: { abyssCore: 10, nebulaAlloy: 5 }, tag: '6단계 전용 소재' },
+]);
+
+function initialState() {
+  return {
+    player: { displayName: '개척자', level: 12, basePower: 150, maxHp: 120 },
+    wallet: { scrap: 5, fissureIron: 8, bogSap: 0, emberCrystal: 0, memoryShard: 0, nebulaAlloy: 0, abyssCore: 0 },
+    clearedStageIds: ['S01'],
+    inventory: [{ instanceId: 'E000', recipeId: null, name: '훈련용 검', kind: 'weapon', rarity: '기본', power: 0 }],
+    equipment: { weapon: 'E000', armor: null, accessory: null },
+    potions: 2,
+    session: { id: 'mock-session', mode: 'fixture' },
+  };
+}
+
+function totalPower(state) {
+  const gearPower = Object.values(state.equipment).reduce((total, instanceId) => {
+    const item = state.inventory.find((i) => i.instanceId === instanceId);
+    return total + (item?.power ?? 0);
+  }, 0);
+  return state.player.basePower + gearPower;
+}
+function stageAccess(stage, state) {
+  const unlocked = stage.index === 1 || state.clearedStageIds.includes(`S${String(stage.index - 1).padStart(2, '0')}`);
+  const sufficientPower = totalPower(state) >= stage.recommendedPower;
+  return {
+    unlocked,
+    sufficientPower,
+    canEnter: unlocked && sufficientPower,
+    reason: !unlocked ? `이전 구역 ${String(stage.index - 1).padStart(2, '0')}을 먼저 완료해야 합니다.` : !sufficientPower ? `권장 전투력 ${stage.recommendedPower} 이상이 필요합니다.` : null,
+  };
+}
+function craftingStatus(recipe, wallet) {
+  const missing = Object.entries(recipe.cost).filter(([id, amount]) => (wallet[id] ?? 0) < amount)
+    .map(([id, amount]) => ({ id, required: amount, owned: wallet[id] ?? 0, deficit: amount - (wallet[id] ?? 0) }));
+  return { craftable: missing.length === 0, missing };
+}
+function craft(state, recipeId) {
+  const recipe = recipes.find((r) => r.id === recipeId);
+  if (!recipe) return { ok: false, code: 'UNKNOWN_RECIPE', state };
+  if (!craftingStatus(recipe, state.wallet).craftable) return { ok: false, code: 'INSUFFICIENT_RESOURCES', state };
+  const next = structuredClone(state);
+  for (const [id, amount] of Object.entries(recipe.cost)) next.wallet[id] -= amount;
+  const currentMax = next.inventory.reduce((max, item) => Math.max(max, Number(item.instanceId.slice(1)) || 0), 0);
+  const item = { instanceId: `E${String(currentMax + 1).padStart(3, '0')}`, recipeId: recipe.id, name: recipe.name, kind: recipe.kind, rarity: recipe.rarity, power: recipe.power };
+  next.inventory.push(item);
+  return { ok: true, item, state: next };
+}
+function equip(state, instanceId) {
+  const item = state.inventory.find((i) => i.instanceId === instanceId);
+  if (!item || !Object.hasOwn(state.equipment, item.kind)) return { ok: false, code: 'INVALID_ITEM', state };
+  const next = structuredClone(state);
+  next.equipment[item.kind] = instanceId;
+  return { ok: true, state: next };
+}
+function completeStage(state, stageId, rewardQuantity) {
+  const stage = stages.find((s) => s.id === stageId);
+  if (!stage || !Number.isInteger(rewardQuantity) || rewardQuantity < stage.rewardMin || rewardQuantity > stage.rewardMax) {
+    return { ok: false, code: 'INVALID_REWARD', state };
+  }
+  if (!stageAccess(stage, state).canEnter) return { ok: false, code: 'STAGE_NOT_ACCESSIBLE', state };
+  const next = structuredClone(state);
+  next.wallet[stage.exclusiveResourceId] += rewardQuantity;
+  next.wallet.scrap += 2;
+  if (!next.clearedStageIds.includes(stage.id)) next.clearedStageIds.push(stage.id);
+  return { ok: true, state: next, reward: { [stage.exclusiveResourceId]: rewardQuantity, scrap: 2 } };
+}
+
+// Unique-source invariant: each stage exposes exactly one zone-exclusive item.
+function validateFixtures() {
+  const stageIds = new Set(stages.map((s) => s.id));
+  const ids = stages.map((s) => s.exclusiveResourceId);
+  return {
+    uniqueStageIds: stageIds.size === stages.length,
+    uniqueExclusiveResources: new Set(ids).size === ids.length,
+    resourcesExist: ids.every((id) => Object.hasOwn(resources, id)),
+    recipesUseKnownResources: recipes.every((r) => Object.keys(r.cost).every((id) => Object.hasOwn(resources, id))),
+    recipesUseStageResources: recipes.every((r) => Object.keys(r.cost).some((id) => ids.includes(id))),
+  };
+}
+
+/**
+ * UI5-005 / UI-owned asynchronous presentation boundary.
+ * PROPOSAL ONLY: neither the transport nor this module defines the authoritative
+ * game protocol. A real adapter must map the approved server snapshot and
+ * command envelope onto these view-facing shapes.
+ */
+// Validation is intentionally for this *demo view snapshot*, not a substitute
+// for the Core/Data sections' future canonical API schema.
+function isUi5DemoSnapshot(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const {player,wallet,inventory,equipment,clearedStageIds,potions} = value;
+  if (!player || typeof player.displayName !== 'string' || !Number.isSafeInteger(player.level) || player.level < 1 ||
+    !Number.isSafeInteger(player.basePower) || player.basePower < 0 || !Number.isSafeInteger(player.maxHp) || player.maxHp < 1) return false;
+  if (!wallet || typeof wallet !== 'object' || Array.isArray(wallet) ||
+    !Object.values(wallet).every(q => Number.isSafeInteger(q) && q >= 0)) return false;
+  if (!Array.isArray(inventory) || !Array.isArray(clearedStageIds) ||
+    !clearedStageIds.every(id => typeof id === 'string') ||
+    new Set(clearedStageIds).size !== clearedStageIds.length) return false;
+  if (!inventory.every(i => i && typeof i.instanceId === 'string' && typeof i.name === 'string' &&
+    ['weapon','armor','accessory'].includes(i.kind) && Number.isSafeInteger(i.power) && i.power >= 0) ||
+    new Set(inventory.map(i => i.instanceId)).size !== inventory.length) return false;
+  if (!equipment || typeof equipment !== 'object') return false;
+  const byId=new Map(inventory.map(i => [i.instanceId,i]));
+  for (const kind of ['weapon','armor','accessory']) {
+    const itemId=equipment[kind];
+    if (itemId !== null && (!byId.has(itemId) || byId.get(itemId).kind !== kind)) return false;
+  }
+  return Number.isSafeInteger(potions) && potions >= 0;
+}
+const isSnapshot = isUi5DemoSnapshot;
+const isRevision = (revision) => Number.isSafeInteger(revision) && revision >= 0;
+const clone = (object) => structuredClone(object);
+
+function createUi5Bridge({ transport, initialSnapshot, initialRevision = 0,
+  onChange = () => {}, onCommand = () => {}, nextRequestId, timeoutMs = 8000 }) {
+  if (!transport || typeof transport.execute !== 'function' || typeof transport.read !== 'function') throw new TypeError('transport.execute/read required');
+  if (!isSnapshot(initialSnapshot) || !isRevision(initialRevision)) throw new TypeError('invalid initial snapshot/revision');
+  let snapshot = clone(initialSnapshot);
+  let revision = initialRevision;
+  let active = null;
+  let error = null;
+  let reconciliationRequired = false;
+  let sequence = 0;
+  const requestId = nextRequestId ?? (() => `UI5-${++sequence}`);
+  const status = () => ({ phase: active?.phase ?? (error ? 'error' : 'ready'), revision,
+    pending: active ? { type: active.type, requestId: active.requestId } : null,
+    error: error ? { ...error } : null, reconciliationRequired });
+  const publish = () => onChange(clone(snapshot), status());
+  const fail = (code, details = {}, requiresSync = false) => {
+    active = null;
+    reconciliationRequired ||= requiresSync;
+    error = { code, ...details };
+    publish();
+    return { ok: false, code };
+  };
+  // Abort is a client-side timeout, NOT evidence that the server rolled back.
+  const timed = async (operation) => {
+    const controller = new AbortController();
+    let timer;
+    let expired = false;
+    try {
+      return await Promise.race([
+        Promise.resolve().then(() => operation(controller.signal)),
+        new Promise((_, reject) => { timer = setTimeout(() => {
+          expired = true;
+          controller.abort();
+          reject(Object.assign(new Error('UI request deadline exceeded'), { code: 'TIMEOUT' }));
+        }, timeoutMs); }),
+      ]);
+    } catch (err) {
+      // Aborting may reject the transport before the timeout rejection wins the race.
+      if (expired) throw Object.assign(new Error('UI request deadline exceeded'), { code:'TIMEOUT' });
+      throw err;
+    } finally { clearTimeout(timer); }
+  };
+  const submit = async (type, payload = {}) => {
+    if (active) return { ok: false, code: 'BUSY' };
+    if (reconciliationRequired) return { ok: false, code: 'RECONCILIATION_REQUIRED' };
+    const command = { version: CONTRACT_VERSION, type, requestId: requestId(), expectedRevision: revision, payload: clone(payload) };
+    active = { phase: 'pending', type, requestId: command.requestId };
+    error = null; publish();
+    // Audit hook for UI integration; it does not send the request by itself.
+    try { onCommand(clone(command)); }
+    catch { /* A UI observer must not invalidate a game operation. */ }
+    let response;
+    try { response = await timed(signal => transport.execute(command, { signal })); }
+    catch (err) { return fail(err?.code === 'TIMEOUT' ? 'TIMEOUT' : 'NETWORK_ERROR', {}, true); }
+    if (!response || response.requestId !== command.requestId || typeof response.ok !== 'boolean') {
+      return fail('INVALID_RESPONSE', {}, true);
+    }
+    if (!response.ok) {
+      const code = typeof response.code === 'string' ? response.code : 'REJECTED';
+      return fail(code, {}, code === 'REVISION_CONFLICT' || code === 'UNKNOWN_COMMIT');
+    }
+    if (!isRevision(response.revision) || response.revision <= revision || !isSnapshot(response.snapshot)) {
+      return fail('INVALID_RESPONSE', {}, true);
+    }
+    revision = response.revision;
+    snapshot = clone(response.snapshot);
+    error = null;
+    active = null;
+    reconciliationRequired = false;
+    publish();
+    return { ok: true, revision, meta: response.meta ? clone(response.meta) : {} };
+  };
+  const refresh = async () => {
+    if (active) return { ok: false, code: 'BUSY' };
+    active = { phase: 'syncing', type: 'snapshot.read', requestId: requestId() };
+    error = null; publish();
+    let response;
+    try { response = await timed(signal => transport.read({ signal })); }
+    catch (err) { return fail(err?.code === 'TIMEOUT' ? 'TIMEOUT' : 'NETWORK_ERROR', {}, true); }
+    if (!response || !isRevision(response.revision) || response.revision < revision || !isSnapshot(response.snapshot)) {
+      return fail('STALE_OR_INVALID_SNAPSHOT', {}, true);
+    }
+    revision = response.revision;
+    snapshot = clone(response.snapshot);
+    active = null;
+    error = null;
+    reconciliationRequired = false;
+    publish();
+    return { ok: true, revision };
+  };
+  return { submit, refresh, status, snapshot: () => clone(snapshot) };
+}
+
+/**
+ * Deterministic standalone-demo transport. All authority here is fake and local.
+ * Do not ship in a real game client and do not treat combat.mock.* as an API.
+ */
+function createMockGameTransport({ initial = initialState(), delayMs = 120 } = {}) {
+  let snapshot = clone(initial);
+  let revision = 0;
+  let failNext = false;
+  const delay = (signal) => new Promise((resolve, reject) => {
+    if (signal?.aborted) { reject(Object.assign(new Error('aborted'), { name: 'AbortError' })); return; }
+    const onAbort = () => { clearTimeout(timer); reject(Object.assign(new Error('aborted'), { name: 'AbortError' })); };
+    const timer = setTimeout(() => { signal?.removeEventListener('abort', onAbort); resolve(); }, delayMs);
+    signal?.addEventListener('abort', onAbort, { once: true });
+  });
+  return {
+    failNextRequest() { failNext = true; },
+    async read({ signal } = {}) { await delay(signal); return { revision, snapshot: clone(snapshot) }; },
+    async execute(command, { signal } = {}) {
+      await delay(signal);
+      if (failNext) { failNext = false; throw new Error('MOCK_NETWORK_UNAVAILABLE'); }
+      if (command.version !== CONTRACT_VERSION) return { requestId:command.requestId, ok:false, code:'UNSUPPORTED_VERSION' };
+      if (command.expectedRevision !== revision) return { requestId:command.requestId, ok:false, code:'REVISION_CONFLICT' };
+      let outcome = null;
+      let meta = {};
+      const { type, payload } = command;
+      if (type === 'crafting.create.requested') {
+        outcome = craft(snapshot, payload.recipeId);
+        if (outcome.ok) meta = { item: clone(outcome.item) };
+      } else if (type === 'equipment.equip.requested') {
+        outcome = equip(snapshot, payload.instanceId);
+      } else if (type === 'expedition.start.requested') {
+        const stage = stages.find(s => s.id === payload.stageId);
+        outcome = stage && stageAccess(stage,snapshot).canEnter
+          ? {ok:true,state:snapshot} : {ok:false, code:'STAGE_NOT_ACCESSIBLE'};
+      } else if (type === 'expedition.abandon.requested') {
+        outcome = { ok:true, state:snapshot };
+      } else if (type === 'combat.mock.potion') {
+        outcome = snapshot.potions > 0
+          ? {ok:true,state:{...snapshot,potions:snapshot.potions-1}} : {ok:false,code:'NO_POTIONS'};
+      } else if (type === 'expedition.complete.mock') {
+        outcome = completeStage(snapshot,payload.stageId,payload.rewardQuantity);
+        if (outcome.ok) meta = { reward:clone(outcome.reward) };
+      } else return { requestId:command.requestId, ok:false, code:'UNSUPPORTED_COMMAND' };
+      if (!outcome.ok) return { requestId:command.requestId, ok:false, code:outcome.code };
+      snapshot = clone(outcome.state);
+      revision += 1;
+      return { requestId:command.requestId,ok:true,revision,snapshot:clone(snapshot),meta };
+    },
+    /** Test/demo-only: reset resets local fixture, increasing revision. */
+    resetDemo() { snapshot = clone(initial); revision += 1; failNext = false; },
+    /** Test/demo-only: emulate an external update for revision-conflict QA. */
+    bumpDemoRevision() { revision += 1; },
+    inspectDemo() { return { revision, snapshot:clone(snapshot) }; },
+  };
+}
+
+/**
+ * UI prototype only. All domain actions are translated into commands first;
+ * the local mock reducer below simulates backend responses for a clickable demo.
+ * Domain ownership remains with the core/balance/data sections.
+ */
+document.addEventListener('keydown', e => { if (e.key === 'Tab') document.body.classList.add('keyboard-navigation'); }, true);
+document.addEventListener('pointerdown', () => document.body.classList.remove('keyboard-navigation'), true);
+const app = document.getElementById('app');
+const announcements = document.getElementById('announcements');
+const safe = (x) => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icon = (name, className = '') => `<svg class="icon ${className}" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+const resourceIcon = (id) => `<span class="resource-emblem ${resources[id]?.tone ?? ''}" aria-hidden="true">${safe(resources[id]?.symbol ?? '•')}</span>`;
+const short = (num) => Number(num).toLocaleString('ko-KR');
+const navItems = [
+  ['home','home','거점'], ['expeditions','map','원정 지도'], ['forge','forge','제작소'], ['inventory','bag','보관함']
+];
+
+let state = initialState();
+let bridgeStatus = { phase:'ready', revision:0, pending:null, error:null, reconciliationRequired:false };
+const mockTransport = createMockGameTransport({ initial:state, delayMs:180 });
+const isBusy = () => bridgeStatus.phase === 'pending' || bridgeStatus.phase === 'syncing';
+let screen = 'home';
+let selectedStageId = 'S02';
+let selectedRecipeId = 'R01';
+let modal = null;
+let toastMessage = '';
+let battle = null;
+let result = null;
+let sessionSeq = 0;
+let toastTimer;
+const commands = [];
+const recordCommand = (cmd) => {
+  commands.push(cmd);
+  if (commands.length > 100) commands.shift();
+  window.dispatchEvent(new CustomEvent('ui5:command', { detail: cmd }));
+};
+const nextRequestId = () => `UI-${++sessionSeq}`;
+const emit = (type, payload = {}) => {
+  const cmd = { version:CONTRACT_VERSION, type, payload, requestId:nextRequestId() };
+  recordCommand(cmd);
+  return cmd;
+};
+const bridge = createUi5Bridge({
+  transport:mockTransport, initialSnapshot:state, nextRequestId,
+  onCommand:recordCommand,
+  onChange:(snapshot,status) => { state=snapshot;bridgeStatus=status;render(); }
+});
+const operationError = (code) => ({
+  TIMEOUT:'요청 시간이 초과되었습니다. 처리 여부가 불확실해 상태를 동기화해야 합니다.',
+  NETWORK_ERROR:'연결 오류가 발생했습니다. 중복 수행을 막기 위해 상태를 동기화해 주세요.',
+  REVISION_CONFLICT:'다른 작업으로 상태가 변경되었습니다. 최신 상태를 불러오세요.',
+  RECONCILIATION_REQUIRED:'상태 동기화가 필요합니다. 동일 작업을 다시 보내기 전에 새로고침하세요.',
+  INSUFFICIENT_RESOURCES:'소재 보유량이 부족합니다.',
+  STAGE_NOT_ACCESSIBLE:'스테이지 입장 조건이 충족되지 않았습니다.',
+  INVALID_ITEM:'장착할 수 없는 장비입니다.',
+  BUSY:'이전 요청을 처리 중입니다.',
+  NO_POTIONS:'사용할 물약이 없습니다.',
+  INVALID_REWARD:'모의 전투 보상을 처리하지 못했습니다.',
+  STALE_OR_INVALID_SNAPSHOT:'갱신 데이터가 유효하지 않거나 이전 버전입니다.',
+  INVALID_RESPONSE:'응답 데이터 형식이 잘못되었습니다. 상태 동기화가 필요합니다.'
+})[code] ?? '작업을 처리하지 못했습니다. 최신 상태를 확인하세요.';
+async function submitCommand(type,payload={}) {
+  const outcome=await bridge.submit(type,payload);
+  if (!outcome.ok) { notify(operationError(outcome.code));render();return null; }
+  return outcome;
+}
+function connectionBanner() {
+  if (bridgeStatus.phase === 'pending' || bridgeStatus.phase === 'syncing') {
+    const label = bridgeStatus.phase === 'syncing' ? '게임 상태를 동기화하는 중입니다.' :
+      ({ 'crafting.create.requested':'제작 결과를 확인하는 중입니다.', 'equipment.equip.requested':'장착 결과를 확인하는 중입니다.', 'expedition.start.requested':'원정 입장 조건을 확인하는 중입니다.', 'expedition.complete.mock':'모의 보상을 반영하는 중입니다.', 'combat.mock.potion':'물약 사용을 반영하는 중입니다.' })[bridgeStatus.pending?.type] ?? '작업 결과를 확인하는 중입니다.';
+    return `<div class="connection-banner is-pending" role="status" aria-live="polite"><span class="status-spinner" aria-hidden="true"></span><span>${safe(label)}</span></div>`;
+  }
+  if (bridgeStatus.error) return `<div class="connection-banner is-error" role="alert"><div><strong>상태 확인 필요</strong><p>${safe(operationError(bridgeStatus.error.code))}</p></div><button type="button" data-action="sync" class="secondary-button">최신 상태 동기화</button></div>`;
+  return '';
+}
+const notify = (message) => {
+  toastMessage = message;
+  announcements.textContent = message;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastMessage = ''; document.querySelector('.toast')?.remove(); }, 4200);
+};
+const navigate = (next) => {
+  if (!navItems.some(([id]) => id === next)) return;
+  emit('navigation.opened', { screen: next });
+  screen = next;
+  render();
+  window.scrollTo({ top:0, behavior:'instant' });
+};
+const getStage = (id) => stages.find(s => s.id === id);
+const getRecipe = (id) => recipes.find(r => r.id === id);
+const currentStage = () => getStage(selectedStageId) ?? stages[0];
+const currentRecipe = () => getRecipe(selectedRecipeId) ?? recipes[0];
+const clearCount = () => state.clearedStageIds.length;
+const displayTitle = () => ({home:'거점 개요',expeditions:'원정 지도',forge:'장비 제작소',inventory:'장비 보관함',battle:'원정 진행',result:'원정 결과'})[screen];
+
+function shell(content) {
+  const activeScreen = ['battle','result'].includes(screen) ? 'expeditions' : screen;
+  const nav = navItems.map(([id, sym, label]) => `<button type="button" data-action="navigate" data-id="${id}" class="nav-button ${activeScreen === id ? 'active' : ''}" aria-current="${activeScreen === id ? 'page' : 'false'}">${icon(sym)}<span>${label}</span></button>`).join('');
+  return `<aside class="sidebar" aria-label="주 메뉴">
+      <div class="brand"><div class="brand-mark" aria-hidden="true"><b>◇</b></div><div class="brand-text"><strong>경계의 기록</strong><small>CHRONICLE / UI STUDY</small></div></div>
+      <p class="nav-caption">EXPLORATION</p><nav class="main-nav" aria-label="화면 이동">${nav}</nav>
+      <div class="sidebar-bottom"><div class="side-status"><span class="tiny">현재 원정 진행도</span><strong>${String(clearCount()).padStart(2,'0')} <em>/ ${String(stages.length).padStart(2,'0')} ZONES</em></strong><div class="side-progress"><span style="width:${Math.round(clearCount()/stages.length*100)}%"></span></div></div><button type="button" data-action="settings" class="settings-link">${icon('settings')} 프로토타입 정보 · 설정</button><div class="sidebar-note">SECTION 05 · INTERACTIVE UI</div></div>
+    </aside>
+    <main id="main-content" tabindex="-1" class="main-content">
+      <header class="topbar"><div class="breadcrumb"><span>THE FRONTIER</span>${icon('chevron')}<span>${safe(displayTitle())}</span></div><div class="top-actions"><button type="button" data-action="settings" class="mobile-settings" aria-label="프로토타입 정보 · 설정">${icon('settings')}</button><div class="world-pill"><i></i> MOCK SESSION</div><div class="avatar" title="개척자" aria-label="개척자 프로필">✦</div></div></header>
+      ${connectionBanner()}${content}<footer class="footer"><span>UI SYSTEM · DRAFT 0.1</span><span>내부 시연용 — 시스템 수치 및 명칭 미확정</span></footer>
+    </main>
+    ${modal ? modalMarkup() : ''}${toastMessage ? `<div class="toast" role="status">${safe(toastMessage)}</div>` : ''}`;
+}
+function heading(kicker,title,description) {
+  return `<div class="page-header"><div class="eyebrow" style="margin-bottom:9px">${safe(kicker)}</div><h1>${safe(title)}</h1><p class="page-desc">${safe(description)}</p></div>`;
+}
+function sectionRow(title,sub,actionLabel,action) {
+  return `<div class="section-row"><div><h2>${safe(title)}</h2>${sub ? `<p>${safe(sub)}</p>` : ''}</div>${actionLabel ? `<button type="button" class="text-button" data-action="${action}">${safe(actionLabel)} ${icon('arrow')}</button>` : ''}</div>`;
+}
+
+function homePage() {
+  const available = stages.find(s => !state.clearedStageIds.includes(s.id)) ?? stages.at(-1);
+  const selected = stages.find(s => stageAccess(s,state).unlocked && !state.clearedStageIds.includes(s.id)) ?? stages[0];
+  const craftable = recipes.filter(r => craftingStatus(r,state.wallet).craftable).length;
+  return `${heading('BASE CAMP / OVERVIEW', '원정의 시작, 경계의 거점', '스테이지에서 획득한 전용 자원으로 장비를 만들고 다음 경계를 개척하세요.')}
+    <section class="hero" aria-label="다음 원정"><div class="hero-content"><div class="eyebrow">NEXT EXPEDITION · ZONE ${String(available.index).padStart(2,'0')}</div><h2>더 깊은 경계로,<br />새로운 자원을 찾아서.</h2><p>스테이지마다 획득 가능한 전용 소재가 다릅니다. 새로운 장비를 제작하고 더 높은 난이도의 구역에 도전하세요.</p><div class="hero-footer"><button type="button" data-action="navigate" data-id="expeditions" class="primary-button">원정 지도 열기 ${icon('arrow')}</button><button type="button" data-action="navigate" data-id="forge" class="ghost-button">장비 제작소</button></div></div></section>
+    <div class="summary-grid" aria-label="플레이어 상태">
+      <div class="summary-tile"><small>${icon('sword')} 현재 전투력</small><strong>${short(totalPower(state))}<span>POWER</span></strong></div>
+      <div class="summary-tile"><small>${icon('map')} 완료한 구역</small><strong>${String(clearCount()).padStart(2,'0')}<span>/ ${String(stages.length).padStart(2,'0')} ZONES</span></strong></div>
+      <div class="summary-tile"><small>${icon('forge')} 제작 가능 장비</small><strong>${String(craftable).padStart(2,'0')}<span>BLUEPRINTS</span></strong></div>
+    </div>
+    <div class="home-bottom">
+      <section>${sectionRow('다음 개척 목표','현재 진행도에 맞춘 권장 경로','전체 지도 보기','go-map')}
+        <div class="panel"><div class="panel-head"><div><h3>경계 탐사 진행도</h3><small>${clearCount()}개 구역 완료 · 전체 ${stages.length}개 구역</small></div><span class="tag gold">${Math.round(clearCount()/stages.length*100)}% 완료</span></div><div class="progress-track"><span style="width:${Math.round(clearCount()/stages.length*100)}%"></span></div><div class="checkpoint"><span>균열 초입</span><span>심연의 왕좌</span></div>
+        ${[selected,stages[Math.min(selected.index,stages.length-1)]].filter((v,i,a)=>i===0||a[0].id!==v.id).map(s=>`<div class="zone-line"><div class="zone-dot">${String(s.index).padStart(2,'0')}</div><div><strong>${safe(s.title)}</strong><small>권장 전투력 ${short(s.recommendedPower)} · ${safe(resources[s.exclusiveResourceId].name)}</small></div><span class="line-state">${stageAccess(s,state).canEnter?'입장 가능':stageAccess(s,state).unlocked?'장비 강화 필요':'잠김'}</span></div>`).join('')}</div>
+      </section><section>${sectionRow('개척자 안내','성장 루프의 핵심 정보')}
+      <div class="panel"><div class="panel-head"><div><h3>전용 자원의 중요성</h3><small>구역을 탐색할 이유를 분명하게</small></div>${icon('spark')}</div><p class="page-desc">각 구역은 고유한 제작 재료를 제공합니다. 높은 등급의 설계도에는 이전 구역의 재료가 추가로 필요하도록 구성했습니다.</p><div class="detail-feature">${resourceIcon('fissureIron')} <span>시연 시나리오: 균열철 6개 + 고철 3개 → <b>선봉의 장검</b> 제작 → 장착 → 2구역 입장</span></div><button type="button" data-action="navigate" data-id="forge" class="secondary-button full">장비 제작 살펴보기 ${icon('arrow')}</button></div>
+      </section></div>`;
+}
+function stageCard(s) {
+  const access = stageAccess(s,state);
+  const isCleared = state.clearedStageIds.includes(s.id);
+  return `<button type="button" data-action="select-stage" data-id="${s.id}" class="stage-card ${selectedStageId===s.id?'selected':''} ${!access.unlocked?'locked':''}" aria-pressed="${selectedStageId===s.id}">
+    <div class="stage-art art-${s.environment}"><span class="art-no">ZONE ${String(s.index).padStart(2,'0')}</span><span class="art-state">${isCleared?'✓ 완료':!access.unlocked?'🔒 잠김':access.sufficientPower?'진입 가능':'전투력 부족'}</span></div>
+    <div class="stage-copy"><div class="stage-zone">TIER ${String(s.tier).padStart(2,'0')} / ${safe(s.zone)}</div><h3>${safe(s.title)}</h3><div class="stage-sub">${safe(s.subtitle)}</div><div class="stage-meta"><span>권장 전투력 <strong>${short(s.recommendedPower)}</strong></span><span>전용 ${safe(resources[s.exclusiveResourceId].name)}</span></div></div>
+  </button>`;
+}
+function expeditionsPage() {
+  const s = currentStage();
+  const access = stageAccess(s,state);
+  const res = resources[s.exclusiveResourceId];
+  return `${heading('EXPEDITION / ZONE MAP', '원정 지도', '각 구역은 독립 난이도와 고유 소재를 가집니다. 스테이지를 선택하여 상세 정보를 확인하세요.')}
+  <div class="summary-grid" style="margin-top:0; margin-bottom:23px"><div class="summary-tile"><small>진행도</small><strong>${clearCount()}<span>/ ${stages.length} 구역</span></strong></div><div class="summary-tile"><small>현재 전투력</small><strong>${short(totalPower(state))}<span>POWER</span></strong></div><div class="summary-tile"><small>다음 목표</small><strong>Tier ${String(Math.min(stages.length,clearCount()+1)).padStart(2,'0')}</strong></div></div>
+  ${sectionRow('탐험 구역','아래 카드 선택 시 상세 영역 갱신')}
+  <div class="stage-grid" aria-label="탐험 구역 목록">${stages.map(stageCard).join('')}</div>
+  ${sectionRow('선택한 구역','진입 조건과 고유 보상 미리보기')}
+  <div class="details-layout" id="stage-detail"><section class="panel"><div class="panel-head"><div><span class="eyebrow">ZONE ${String(s.index).padStart(2,'0')} · TIER ${s.tier}</span><h2 style="margin-top:9px">${safe(s.title)}</h2><small>${safe(s.subtitle)}</small></div><span class="tag ${access.unlocked ? access.sufficientPower?'green':'red':'gray'}">${access.unlocked ? access.sufficientPower?'도전 가능':'전투력 부족':'잠김'}</span></div><div class="detail-feature">${icon('spark')} 고유 환경 기믹: <b>${safe(s.feature)}</b> · 실제 효과는 시스템 설계 확정 필요</div>
+    <div class="detail-line"><span>권장 전투력</span><strong>${short(s.recommendedPower)} / 현재 ${short(totalPower(state))}</strong></div><div class="detail-line"><span>등장 적 (시연용)</span><strong>${safe(s.monster)}</strong></div><div class="detail-line"><span>선행 조건</span><strong>${s.index === 1 ? '제한 없음' : `ZONE ${String(s.index-1).padStart(2,'0')} 완료`}</strong></div>
+    ${access.reason ? `<div class="warning-box">${icon('info')} ${safe(access.reason)}</div>` : ''}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px"><button class="primary-button" type="button" data-action="start-stage" data-id="${s.id}" ${access.canEnter && !isBusy()?'':'disabled'}>${isBusy()?'확인 중…':'원정 시작'} ${icon('arrow')}</button>${!access.sufficientPower && access.unlocked?'<button class="secondary-button" type="button" data-action="navigate" data-id="forge">제작소에서 강화</button>':''}</div></section>
+    <aside class="panel"><div class="panel-head"><div><h3>획득 가능 전용 자원</h3><small>해당 구역에서만 얻는 특수 재료</small></div></div><div class="resource-label" style="margin-bottom:12px">${resourceIcon(s.exclusiveResourceId)}<div><strong style="font-size:14px">${safe(res.name)}</strong><div style="font-size:10px;color:var(--text-muted);margin-top:5px">${safe(res.source)}</div></div></div><div class="detail-line"><span>시연 보상량</span><strong>${s.rewardMin}–${s.rewardMax}개 / 클리어</strong></div><div class="detail-line"><span>현재 보유량</span><strong>${short(state.wallet[s.exclusiveResourceId])}개</strong></div><p class="placeholder-disclaimer" style="margin-top:15px">보상량·드랍률·전투력 수치는 시연용 가상 값입니다. 최종 데이터는 경제 및 밸런스 담당 섹션에서 공급해야 합니다.</p><button type="button" data-action="navigate" data-id="forge" class="secondary-button full" style="margin-top:16px">제작 설계도 확인 ${icon('arrow')}</button></aside></div>`;
+}
+function forgePage() {
+  const r = currentRecipe();
+  const status = craftingStatus(r,state.wallet);
+  return `${heading('FORGE / EQUIPMENT', '장비 제작소', '획득한 스테이지 전용 자원을 활용해 다음 단계에 필요한 장비를 제작합니다.')}
+    <div class="recipe-layout"><div><div class="section-row" style="margin-top:0"><div><h2>제작 설계도</h2><p>구역별 단계 성장 시연 · ${recipes.length}종</p></div><span class="tag gold">${recipes.filter(r=>craftingStatus(r,state.wallet).craftable).length}개 제작 가능</span></div><div class="recipe-list">
+      ${recipes.map(recipe=>`<button type="button" data-action="select-recipe" data-id="${recipe.id}" class="recipe-button ${selectedRecipeId===recipe.id?'active':''}" aria-pressed="${selectedRecipeId===recipe.id}"><div class="item-symbol">${icon(recipe.kind==='weapon'?'sword':recipe.kind==='armor'?'shield':'spark')}</div><div class="recipe-text"><strong>${safe(recipe.name)}</strong><small>${safe(recipe.kindLabel)} · 전투력 +${recipe.power} · ${safe(recipe.tag)}</small></div><span class="tag ${craftingStatus(recipe,state.wallet).craftable?'green':'gray'}">${craftingStatus(recipe,state.wallet).craftable?'제작 가능':safe(recipe.rarity)}</span>${icon('chevron')}</button>`).join('')}
+      </div></div><aside class="panel sticky-panel"><div class="item-showcase">${icon(r.kind==='weapon'?'sword':r.kind==='armor'?'shield':'spark')}</div><div class="eyebrow">BLUEPRINT ${safe(r.id)}</div><h2 style="margin:9px 0 7px">${safe(r.name)}</h2><p class="page-desc">${safe(r.description)}</p><div class="detail-line"><span>장비 유형</span><strong>${safe(r.kindLabel)} / ${safe(r.rarity)}</strong></div><div class="detail-line"><span>전투력 증가</span><strong style="color:var(--gold)">+${short(r.power)}</strong></div>
+    <h3 style="margin:19px 0 6px">제작 필요 소재</h3>
+    ${Object.entries(r.cost).map(([id,amount])=>{
+      const source=stages.find(stage=>stage.exclusiveResourceId===id);
+      return `<div class="material-row"><div class="material-name">${resourceIcon(id)} <span>${safe(resources[id].name)}${source?`<button class="material-source" type="button" data-action="source-stage" data-id="${safe(source.id)}" aria-label="${safe(resources[id].name)} 획득처: ${safe(source.title)} 지도 보기">획득처: ${safe(source.title)} ${icon('arrow')}</button>`:`<small class="material-common">공통 보상</small>`}</span></div><span class="material-qty ${(state.wallet[id] ?? 0)>=amount?'enough':'missing'}">${short(state.wallet[id] ?? 0)} / ${short(amount)}</span></div>`;
+    }).join('')}
+    <p class="placeholder-disclaimer" style="margin-top:16px">${status.craftable?'필요한 자원을 모두 보유했습니다.':'부족한 자원을 해당 구역에서 획득하세요.'}</p><button type="button" class="primary-button full" style="margin-top:12px" data-action="craft" data-id="${r.id}" ${status.craftable && !isBusy()?'':'disabled'}>${icon('forge')} ${isBusy()?'확인 중…':'제작하기'}</button><button type="button" class="text-button" style="margin-top:10px" data-action="navigate" data-id="expeditions">필요 자원 채집 구역 보기 ${icon('arrow')}</button></aside></div>`;
+}
+function inventoryPage() {
+  const slots = [['weapon','무기','sword'],['armor','방어구','shield'],['accessory','장신구','spark']];
+  return `${heading('ARMORY / INVENTORY', '장비 보관함', '제작한 장비를 장착하여 전투력을 높입니다. 장비 유형별 한 슬롯을 사용합니다.')}
+  <div class="summary-grid" style="margin:0 0 27px"><div class="summary-tile"><small>총 전투력</small><strong>${totalPower(state)}<span>POWER</span></strong></div><div class="summary-tile"><small>소유 장비</small><strong>${state.inventory.length}<span>ITEMS</span></strong></div><div class="summary-tile"><small>회복 물약</small><strong>${state.potions}<span>COUNT</span></strong></div></div>
+  <div class="bag-layout"><section class="panel"><div class="panel-head"><div><h2>착용 중인 장비</h2><small>장착 장비의 전투력만 합산</small></div></div><div class="equipment-slots">${slots.map(([slot,label,sym])=>{
+    const item = state.inventory.find(i=>i.instanceId===state.equipment[slot]);
+    return `<div class="equipment-slot"><div class="item-symbol" style="width:46px;min-width:46px;height:49px">${icon(sym)}</div><div><small>${label}</small><strong>${safe(item?.name ?? '비어 있음')}</strong></div><b>+${item?.power ?? 0}</b></div>`;
+  }).join('')}</div></section>
+  <section class="panel"><div class="panel-head"><div><h2>소유 장비</h2><small>제작 완료 아이템 · 실시간 시연 상태</small></div></div>${state.inventory.map(item=>{
+    const active=state.equipment[item.kind]===item.instanceId;
+    return `<div class="inventory-card"><div class="item-symbol">${icon(item.kind==='weapon'?'sword':item.kind==='armor'?'shield':'spark')}</div><div><strong>${safe(item.name)}</strong><small>${safe(item.rarity)} · ${item.kind} · 전투력 +${item.power}</small></div><button type="button" class="small-button" data-action="equip" data-id="${safe(item.instanceId)}" ${active || isBusy()?'disabled':''}>${active?'장착 중':isBusy()?'확인 중…':'장착'}</button></div>`;
+  }).join('')}</section></div>
+  ${sectionRow('보유 제작 소재', '각 재료의 출처는 원정 지도에서 확인할 수 있습니다.','제작소 열기','go-forge')}
+  <section class="panel"><div class="bag-materials">${Object.entries(resources).map(([id,r])=>`<div class="bag-material">${resourceIcon(id)}<div><span>${safe(r.name)}</span><div style="font-size:9px;color:var(--text-faint);margin-top:3px">${safe(r.source)}</div></div><strong>${short(state.wallet[id]??0)}</strong></div>`).join('')}</div></section>`;
+}
+async function startStage(stageId) {
+  const s = getStage(stageId);
+  if (!s || !stageAccess(s,state).canEnter || isBusy()) return notify('입장 조건을 다시 확인하세요.');
+  const outcome=await submitCommand('expedition.start.requested',{stageId,expectedPower:totalPower(state)});
+  if (!outcome) return;
+  battle = { stageId, enemyHp:s.enemyHp, playerHp:state.player.maxHp, energy:100, round:0, log:'적과 조우했습니다. 행동을 선택하세요.' };
+  result = null; screen = 'battle'; render();
+}
+function battlePage() {
+  if (!battle) { screen='expeditions'; return expeditionsPage(); }
+  const s = getStage(battle.stageId);
+  const enemyPercent = Math.max(0,Math.round(battle.enemyHp/s.enemyHp*100));
+  const playerPercent = Math.max(0,Math.round(battle.playerHp/state.player.maxHp*100));
+  return `<div class="battle-shell">${heading('EXPEDITION / COMBAT MOCK', `${s.title} · 전투 시연`, '실제 게임 전투 엔진이 아닌 클릭 기반 화면 흐름 검증용 목업입니다.')}
+    <section class="battle-view" aria-label="전투 화면"><div class="battle-top"><div><strong>ZONE ${String(s.index).padStart(2,'0')} / ${safe(s.title)}</strong><small>TIER ${s.tier} · ${safe(s.feature)}</small></div><button type="button" class="ghost-button" data-action="retreat" ${isBusy()?'disabled':''}>원정 중단</button></div>
+      <div class="enemy-target"><span class="eyebrow">ELITE ENCOUNTER</span><h2 style="margin:6px 0 12px">${safe(s.monster)}</h2><div class="health-caption"><span>적 체력</span><span>${Math.max(0,battle.enemyHp)} / ${s.enemyHp}</span></div><div class="healthbar"><span style="width:${enemyPercent}%"></span></div><div class="enemy-avatar" aria-hidden="true"><span>♜</span></div></div>
+      <div class="battle-bottom"><div class="battle-unit"><div class="health-caption"><strong>${safe(state.player.displayName)} · LV.${state.player.level}</strong><span>전투력 ${totalPower(state)}</span></div><div class="health-caption"><span>체력</span><span>${battle.playerHp} / ${state.player.maxHp}</span></div><div class="healthbar player"><span style="width:${playerPercent}%"></span></div><div class="health-caption"><span>기력</span><span>${battle.energy} / 100</span></div><div class="healthbar energy"><span style="width:${battle.energy}%"></span></div></div>
+      <div class="battle-actions"><h3>전투 행동</h3><div class="action-grid"><button class="secondary-button" type="button" data-action="battle-attack" ${isBusy()?'disabled':''}>${icon('sword')} 기본 공격</button><button class="secondary-button" type="button" data-action="battle-skill" ${battle.energy<30 || isBusy()?'disabled':''}>${icon('spark')} 전투 기술 (30)</button><button class="secondary-button" type="button" data-action="battle-potion" ${state.potions<=0 || isBusy()?'disabled':''}>${icon('potion')} 회복 물약 (${state.potions})</button></div><div class="battle-log" aria-live="polite">${safe(battle.log)}</div></div></div>
+    </section></div>`;
+}
+async function battleAction(action) {
+  if (!battle || isBusy()) return;
+  const s = getStage(battle.stageId);
+  const nextBattle = { ...battle };
+  let log;
+  if (action==='attack') { nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-35); nextBattle.energy=Math.min(100,nextBattle.energy+15); log='기본 공격 적중! 피해 35.'; }
+  else if (action==='skill') { if (nextBattle.energy < 30) return; nextBattle.enemyHp=Math.max(0,nextBattle.enemyHp-62); nextBattle.energy-=30; log='전투 기술 적중! 피해 62.'; }
+  else if (action==='potion') {
+    if (state.potions <= 0) return;
+    if (nextBattle.playerHp===state.player.maxHp) return notify('체력이 이미 가득 찼습니다.');
+    if (!await submitCommand('combat.mock.potion',{})) return;
+    nextBattle.playerHp=Math.min(state.player.maxHp,nextBattle.playerHp+45);
+    log='회복 물약 사용! 체력 +45.';
+  }
+  else return;
+  emit('combat.mock.action', { stageId:s.id, action, round:nextBattle.round+1 });
+  nextBattle.round+=1;
+  if (nextBattle.enemyHp===0) {
+    // Deterministic demo ONLY. The real client must receive authoritative combat results.
+    const completed=await submitCommand('expedition.complete.mock',{stageId:s.id,rewardQuantity:4});
+    if (!completed) return;
+    const rewards=completed.meta.reward;
+    emit('expedition.result.mocked', { stageId:s.id, outcome:'victory', rewards });
+    result = { stageId:s.id, victory:true, rewards };
+    battle=null; screen='result'; render(); return;
+  }
+  nextBattle.playerHp=Math.max(0,nextBattle.playerHp-s.enemyDamage);
+  nextBattle.log=`${log} 적의 반격으로 체력 ${s.enemyDamage} 감소.`;
+  if (nextBattle.playerHp===0) {
+    emit('expedition.result.mocked', { stageId:s.id, outcome:'defeat', rewards:{} });
+    result={ stageId:s.id,victory:false,rewards:{} }; battle=null;screen='result';render();return;
+  }
+  battle=nextBattle; render();
+}
+function resultPage() {
+  if (!result) { screen='expeditions'; return expeditionsPage(); }
+  const s=getStage(result.stageId);
+  return `${heading('EXPEDITION / RESULT', '원정 결과', '결과 보상은 시뮬레이션 데이터이며 실제 지급 시스템과 연결되지 않습니다.')}
+  <section class="panel result-layout"><div class="result-badge" aria-hidden="true">${result.victory?'✦':'×'}</div><div class="eyebrow" style="text-align:center;margin-bottom:10px">${result.victory?'MISSION COMPLETED':'MISSION FAILED'}</div><h2 class="result-title">${result.victory?'원정 완료':'원정 실패'}</h2><p class="result-desc">${safe(s.title)} · ${result.victory?'경계의 위협을 물리쳤습니다. 전용 자원을 획득했습니다.':'장비를 강화한 뒤 다시 도전해 보세요.'}</p>
+  <div class="result-rewards"><h3 style="margin-bottom:10px">획득한 보상</h3>${Object.entries(result.rewards).length?Object.entries(result.rewards).map(([id,qty])=>`<div class="material-row"><div class="material-name">${resourceIcon(id)} ${safe(resources[id].name)}</div><strong>+${qty}</strong></div>`).join(''):'<div class="page-desc">획득한 보상이 없습니다.</div>'}</div>
+  <div class="result-actions"><button type="button" class="primary-button" data-action="navigate" data-id="expeditions">원정 지도 ${icon('arrow')}</button><button type="button" class="secondary-button" data-action="navigate" data-id="forge">장비 제작소</button><button type="button" class="ghost-button" data-action="navigate" data-id="inventory">보관함</button></div></section>`;
+}
+function modalMarkup() {
+  if (modal==='settings') return `<div class="modal-backdrop" data-backdrop="true"><div role="dialog" aria-modal="true" aria-labelledby="modal-title" class="modal"><div class="modal-head"><h2 id="modal-title">프로토타입 정보</h2><button type="button" class="close" aria-label="닫기" data-action="close-modal">${icon('close')}</button></div><p>5번 UI/UX 섹션 단독 시연 빌드입니다. 코어 게임 엔진·밸런스·경제·서버 API에 연결되어 있지 않습니다.</p><div class="settings-row"><span>UI 계약 버전</span><span>${safe(CONTRACT_VERSION)}</span></div><div class="settings-row"><span>데이터 출처</span><span>로컬 Mock Fixture</span></div><div class="settings-row"><span>테스트용 스테이지</span><span>${stages.length}구역</span></div><div class="settings-row"><span>상태 보존</span><span>페이지 새로고침 시 초기화</span></div><div class="settings-row"><span>로컬 View Revision</span><span>${bridgeStatus.revision}</span></div><button type="button" class="secondary-button full" data-action="demo-fail-next" style="margin-top:10px" ${isBusy()?'disabled':''}>다음 조작에서 통신 오류 재현</button><p class="placeholder-disclaimer">시연 전용 오류 주입이며 실제 서버는 연결되어 있지 않습니다.</p><button type="button" class="ghost-button full" style="margin-top:17px" data-action="reset" ${isBusy()?'disabled':''}>시연 데이터 초기화</button></div></div>`;
+  if (modal==='retreat') return `<div class="modal-backdrop" data-backdrop="true"><div role="dialog" aria-modal="true" aria-labelledby="modal-title" class="modal"><div class="modal-head"><h2 id="modal-title">원정을 중단하시겠습니까?</h2><button type="button" class="close" aria-label="닫기" data-action="close-modal">${icon('close')}</button></div><p>전투 진행 내용과 현재 구역의 보상은 저장되지 않습니다. 이미 사용한 물약은 되돌리지 않습니다.</p><div style="display:flex;gap:10px;margin-top:20px"><button type="button" class="secondary-button" data-action="close-modal">전투 계속</button><button type="button" class="primary-button" data-action="confirm-retreat" ${isBusy()?'disabled':''}>중단하고 지도 복귀</button></div></div></div>`;
+  return '';
+}
+let modalTrigger = null;
+function openModal(type) {
+  modalTrigger = { action: document.activeElement?.dataset?.action, id: document.activeElement?.dataset?.id, kind: document.activeElement?.classList.contains('mobile-settings') ? 'mobile-settings' : 'normal' };
+  modal=type;render();requestAnimationFrame(()=>document.querySelector('.modal .close')?.focus());
+}
+function closeModal() {
+  const trigger=modalTrigger;modal=null;render();
+  requestAnimationFrame(()=>{
+    const candidate=[...app.querySelectorAll('[data-action]')].find(el=>el.dataset.action===trigger?.action && el.dataset.id===trigger?.id && (trigger?.kind==='mobile-settings')===el.classList.contains('mobile-settings') && el.getClientRects().length>0);
+    candidate?.focus({preventScroll:true});
+  });
+}
+function render() {
+  const current = document.activeElement;
+  const focusKey = { action: current?.dataset?.action, id: current?.dataset?.id };
+  const content=screen==='home'?homePage():screen==='expeditions'?expeditionsPage():screen==='forge'?forgePage():screen==='inventory'?inventoryPage():screen==='battle'?battlePage():resultPage();
+  app.innerHTML=shell(content);
+  if (focusKey.action && !modal) requestAnimationFrame(()=>{
+    const candidate=[...app.querySelectorAll('[data-action]')].find(el=>!el.disabled && el.dataset.action===focusKey.action && el.dataset.id===focusKey.id);
+    if(candidate) candidate.focus({preventScroll:true});
+    else { const h1=app.querySelector('main h1'); if(h1){ h1.tabIndex=-1; h1.focus({preventScroll:true}); } }
+  });
+}
+async function handleAction(action,id) {
+  switch(action) {
+    case 'navigate':navigate(id);return;
+    case 'go-map':navigate('expeditions');return;
+    case 'go-forge':navigate('forge');return;
+    case 'source-stage': {
+      const zone=getStage(id);
+      if (!zone) return;
+      selectedStageId=id;
+      emit('navigation.opened',{screen:'expeditions',from:'material-source'});
+      screen='expeditions';notify(`${zone.title} · 소재 획득처를 표시했습니다.`);render();
+      document.getElementById('stage-detail')?.scrollIntoView({block:'start',behavior:'instant'});return;
+    }
+    case 'settings':openModal('settings');return;
+    case 'close-modal':closeModal();return;
+    case 'select-stage':selectedStageId=id;emit('expedition.preview.opened',{stageId:id});render();return;
+    case 'select-recipe':selectedRecipeId=id;emit('crafting.preview.opened',{recipeId:id});render();return;
+    case 'start-stage':startStage(id);return;
+    case 'craft': {
+      const outcome=await submitCommand('crafting.create.requested',{recipeId:id});
+      if (!outcome) return;
+      emit('crafting.create.mocked',{recipeId:id,instanceId:outcome.meta.item?.instanceId});
+      notify(`${outcome.meta.item?.name ?? '장비'} 제작 완료! 보관함에서 장착할 수 있습니다.`);
+      render(); return;
+    }
+    case 'equip': {
+      const outcome=await submitCommand('equipment.equip.requested',{instanceId:id});
+      if (!outcome) return;
+      emit('equipment.equip.mocked',{instanceId:id,totalPower:totalPower(state)});
+      notify('장비를 장착했습니다. 현재 전투력이 반영되었습니다.');
+      render(); return;
+    }
+    case 'battle-attack':battleAction('attack');return;
+    case 'battle-skill':battleAction('skill');return;
+    case 'battle-potion':battleAction('potion');return;
+    case 'retreat':openModal('retreat');return;
+    case 'confirm-retreat': {
+      if (!await submitCommand('expedition.abandon.requested',{stageId:battle?.stageId})) return;
+      battle=null;result=null;modal=null;screen='expeditions';notify('원정을 중단했습니다.');render();return;
+    }
+    case 'demo-fail-next': {
+      mockTransport.failNextRequest(); closeModal();
+      notify('다음 게임 조작에서 통신 오류를 재현합니다.');render();return;
+    }
+    case 'sync': {
+      const outcome=await bridge.refresh();
+      notify(outcome.ok?'최신 상태를 불러왔습니다.':operationError(outcome.code));
+      render();return;
+    }
+    case 'reset': {
+      if (isBusy()) return;
+      mockTransport.resetDemo();
+      selectedStageId='S02';selectedRecipeId='R01';battle=null;result=null;modal=null;screen='home';
+      const outcome=await bridge.refresh();
+      emit('prototype.reset',{});
+      notify(outcome.ok?'시연 데이터가 초기화되었습니다.':operationError(outcome.code));render();return;
+    }
+  }
+}
+app.addEventListener('click',e=>{
+  const el=e.target.closest('[data-action]');
+  if(el && !el.disabled){handleAction(el.dataset.action,el.dataset.id);return;}
+  if(e.target.matches('[data-backdrop]'))closeModal();
+});
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&modal){e.preventDefault();closeModal();}
+  if(e.key==='Tab'&&modal){
+    const focusables=[...document.querySelectorAll('.modal button:not(:disabled)')];
+    if(!focusables.length)return;
+    if(e.shiftKey&&document.activeElement===focusables[0]){e.preventDefault();focusables.at(-1).focus();}
+    else if(!e.shiftKey&&document.activeElement===focusables.at(-1)){e.preventDefault();focusables[0].focus();}
+  }
+});
+// Inspection-only test surface; no gameplay authority.
+window.__UI5_PROTOTYPE__={snapshot:()=>structuredClone({state,screen,selectedStageId,selectedRecipeId,battle,result,commands,bridgeStatus}),reset:()=>handleAction('reset'),demo:{failNext:()=>mockTransport.failNextRequest(),bumpRevision:()=>mockTransport.bumpDemoRevision(),read:()=>mockTransport.inspectDemo()}};
+render();
+
+</script>
+</body>
+</html>
