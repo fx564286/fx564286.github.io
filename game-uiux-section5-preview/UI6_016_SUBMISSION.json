@@ -1,0 +1,70 @@
+{
+  "task_id": "UI6-016",
+  "submission_id": "ECL_UI6_016_PENDING_INTAKE",
+  "section_id_central": "06",
+  "section_chat_alias": "05",
+  "official_owner_approval": "PENDING_01",
+  "target_product": "ANDROID_APK_FIRST",
+  "state": "UI_ONLY_CODE_VERIFIED_BROWSER_VERIFIED_NOT_STAGED_NOT_GAME_INTEGRATED_ANDROID_UNVERIFIED",
+  "project_repo_status": "OFFICIAL_GAME_REPO_UNCONFIRMED",
+  "source_repo": "fx564286/fx564286.github.io",
+  "source_role": "INDEPENDENT_UI_PREVIEW",
+  "changes": [
+    {
+      "path": "game-uiux-section5-preview/ui6-runtime-adapter.js",
+      "commit": "29297483b92a910e8af1d6b0c9812903a086ab61",
+      "sha256": "8ef12ca2e23bb39113f9c68dc7a56922dea8bce49975a7c4806ca1a2fa918718",
+      "bytes": 15339
+    },
+    {
+      "path": "game-uiux-section5-preview/tests/ui6-016-foreground-resync.cjs",
+      "commit": "c06635fac775e81c15364a7bd75f0d29fd68c031",
+      "sha256": "6fbcbae3b01db9e85604b47bda4288c0972890b6e80377a792a67b851ed175fc",
+      "bytes": 5042
+    },
+    {
+      "path": "game-uiux-section5-preview/tests/package.json",
+      "commit": "f0f6fb2869af54e82002ecca45abc9c73ed00fa6"
+    },
+    {
+      "path": "game-uiux-section5-preview/UI6_016_RELEASE.md",
+      "commit": "9eb899923b5e824786e3e252d6ea3a3864643647"
+    }
+  ],
+  "provides": [
+    "ui6.view@0.1-proposal (unchanged)",
+    "ui6.command@0.1-proposal (unchanged)"
+  ],
+  "consumes_unverified": [
+    "eclipse.playable_state@0.1",
+    "eclipse.playable_actions@0.1",
+    "core.combat_event_feed@0.2",
+    "Android game runtime lifecycle contract"
+  ],
+  "implementation_behavior": [
+    "on visibility hidden/pagehide/BFCache mark UI state stale and block command intents",
+    "require newer accepted foreground snapshot before reactivating controls",
+    "ignore late pre-suspension callbacks",
+    "do not fabricate rewards, persistent state, core event IDs"
+  ],
+  "tests": {
+    "tdd_red": "background state enabled 4 mutation buttons instead of 0; exit 1",
+    "local": "node --check + 7 local browser scripts PASS; final shell exit 0",
+    "public": "UI6-016 + UI6-015 + UI6-014 port + UI6-014 negative tests PASS; exit 0",
+    "public_url": "https://fx564286.github.io/game-uiux-section5-preview/one-screen.html?mode=integration&build=ui6-016",
+    "deployed_script_sha256_match": true,
+    "deployed_http_status": 200,
+    "real_android_device": "NOT_TESTED",
+    "actual_core_api": "NOT_MAPPED"
+  },
+  "remaining_blockers": [
+    "01 Android client engine / repo / revision and restore semantics",
+    "01 approved official action JSON and event stream schema",
+    "09 Android lifecycle integration, authority and persistence",
+    "07 official art and 08 approved six equipment slot IDs",
+    "02 same APK device acceptance"
+  ],
+  "residual_risk": "A paused backend may not publish a higher revision; UI stays locked after foreground until the official 01 resume sync protocol is defined. Android WebView may require explicit native lifecycle notification.",
+  "next_action": "Central 01 chooses Android client architecture and provides real Core ECL-CORE-004 source/API; UI6 implements approved client integration, then QA verifies same APK.",
+  "central_space_parent": "https://chatgpt.com/space/page_75f14346be3c8191b352923ebb201371"
+}
