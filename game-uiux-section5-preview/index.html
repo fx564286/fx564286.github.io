@@ -883,10 +883,15 @@ function beastArt() { return BEAST_SVG; }
 function gearClass() {
   return [state.equipment.armor ? 'gear-heavy' : '', state.inventory.some(i => i.instanceId === state.equipment.weapon && i.power >= 45) ? 'blade-upgrade' : ''].join(' ');
 }
+let lastBattleImpact = -Infinity;
 function battleImpact(kind, number) {
   const arena=document.querySelector('.swarm-field, .arena-visual');
   if (!arena) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const timestamp=performance.now();
+  if (timestamp-lastBattleImpact<180) return;
+  lastBattleImpact=timestamp;
+  arena.querySelectorAll('.arena-effect').forEach(node=>node.remove());
   const phase=kind==='skill'?'impact-skill':kind==='potion'?'heal':'impact';
   arena.classList.remove('impact','impact-skill','counter');
   if (phase==='impact' || phase==='impact-skill') arena.classList.add(phase);
@@ -1040,15 +1045,15 @@ function battlePage() {
    heading('EXPEDITION / MULTI TARGET IDLE HUNT',s.title+' · 자동 사냥','다수 몬스터를 광역 공격하는 방치형 전투 UI 시연입니다. 리소스·전투 수치는 확정되지 않았습니다.')+
    '<section class="battle-view" aria-label="다수 몬스터 자동 사냥 화면">'+
     '<div class="battle-top"><div><strong>ZONE '+String(s.index).padStart(2,'0')+' · '+safe(s.title)+'</strong><small>스테이지 '+s.tier+' · '+safe(s.feature)+'</small></div><button type="button" class="ghost-button" data-action="retreat" '+(isBusy()?'disabled':'')+'>사냥 중단</button></div>'+
-    '<div class="swarm-field env-'+safe(s.environment)+'" role="group" aria-label="캐릭터 한 명이 여러 몬스터를 광역 공격하는 자동 사냥 장면">'+
-      '<div class="swarm-stats"><div class="swarm-label"><strong>'+safe(state.player.displayName)+' · LV.'+state.player.level+'</strong>HP '+battle.playerHp+' / '+state.player.maxHp+'</div>'+
-       '<div class="swarm-label"><strong>WAVE '+battle.wave+'/'+battle.waves+'</strong>활성 '+alive+'마리 · 처치 '+battle.totalKills+'마리</div></div>'+
+    '<div class="swarm-field env-'+safe(s.environment)+'" data-combat-wave="'+battle.wave+'" role="group" aria-label="캐릭터 한 명이 여러 몬스터를 광역 공격하는 자동 사냥 장면">'+
+      '<div class="swarm-stats"><div class="swarm-label"><strong>'+safe(state.player.displayName)+' · LV.'+state.player.level+'</strong><span data-combat-player-hp>HP '+battle.playerHp+' / '+state.player.maxHp+'</span></div>'+
+       '<div class="swarm-label"><strong data-combat-wave-label>WAVE '+battle.wave+'/'+battle.waves+'</strong><span data-combat-mobs>활성 '+alive+'마리 · 처치 '+battle.totalKills+'마리</span></div></div>'+
       '<div class="swarm-hero '+gearClass()+'" aria-hidden="true">'+fighterArt()+'</div>'+
       '<div class="swarm-field-targets" aria-label="화면에 보이는 몬스터 '+PACK_SIZE+'마리">'+mobsMarkup(battle.mobs)+'</div>'+
       '<div class="aoe-streak" aria-hidden="true"></div>'+
     '</div>'+
-    '<div class="swarm-legend"><span>광역 자동 공격 · 최대 5개 대상 동시 타격</span><strong>총 처치 '+battle.totalKills+' / '+(battle.waves*PACK_SIZE)+'</strong></div>'+
-    '<div class="battle-bottom"><div class="battle-unit"><div class="health-caption"><strong>캐릭터 생명력</strong><span>'+battle.playerHp+' / '+state.player.maxHp+'</span></div><div class="healthbar player"><span style="width:'+hpPercent+'%"></span></div><div class="health-caption"><span>스킬 기력</span><span>'+battle.energy+' / 100</span></div><div class="healthbar energy"><span style="width:'+battle.energy+'%"></span></div></div>'+
+    '<div class="swarm-legend"><span>광역 자동 공격 · 최대 5개 대상 동시 타격</span><strong data-combat-kills>총 처치 '+battle.totalKills+' / '+(battle.waves*PACK_SIZE)+'</strong></div>'+
+    '<div class="battle-bottom"><div class="battle-unit"><div class="health-caption"><strong>캐릭터 생명력</strong><span data-combat-hp>'+battle.playerHp+' / '+state.player.maxHp+'</span></div><div class="healthbar player"><span data-combat-hp-bar style="width:'+hpPercent+'%"></span></div><div class="health-caption"><span>스킬 기력</span><span data-combat-energy>'+battle.energy+' / 100</span></div><div class="healthbar energy"><span data-combat-energy-bar style="width:'+battle.energy+'%"></span></div></div>'+
     '<div class="battle-actions"><h3>방치형 자동 사냥</h3><p class="auto-status">'+(battle.auto?'자동 광역 공격·스킬 발동 중':'자동 사냥 일시정지')+'</p>'+
        '<button type="button" class="primary-button" data-action="toggle-auto" '+(isBusy()?'disabled':'')+'>'+(battle.auto?'일시정지':'자동 사냥 재개')+'</button>'+
        '<button type="button" class="character-link" data-action="navigate" data-id="character" style="margin-left:8px">캐릭터 전신 검사</button>'+
@@ -1057,6 +1062,44 @@ function battlePage() {
    '</section></div>';
 }
 
+
+// UI5-010: in-place projections avoid re-creating actors and navigation on every damage tick.
+// View adapter only; do not use as gameplay authority.
+function syncBattleView() {
+  if (screen !== 'battle' || !battle) return;
+  const view = document.querySelector('.swarm-field');
+  if (!view || view.dataset.combatWave !== String(battle.wave)) {
+    render(); // new wave or remounted screen
+    return;
+  }
+  const setText = (selector, value) => {
+    const node = document.querySelector(selector);
+    if (node && node.textContent !== value) node.textContent = value;
+  };
+  const alive = battle.mobs.filter(m => m.hp > 0).length;
+  setText('[data-combat-player-hp]', 'HP '+battle.playerHp+' / '+state.player.maxHp);
+  setText('[data-combat-mobs]', '활성 '+alive+'마리 · 처치 '+battle.totalKills+'마리');
+  setText('[data-combat-kills]', '총 처치 '+battle.totalKills+' / '+(battle.waves*PACK_SIZE));
+  setText('[data-combat-hp]', battle.playerHp+' / '+state.player.maxHp);
+  setText('[data-combat-energy]', battle.energy+' / 100');
+  setText('.battle-log', battle.log);
+  const setWidth = (selector, percent) => {
+    const bar = document.querySelector(selector);
+    if (bar) bar.style.width = Math.max(0, Math.min(100,percent))+'%';
+  };
+  setWidth('[data-combat-hp-bar]', Math.round(battle.playerHp/state.player.maxHp*100));
+  setWidth('[data-combat-energy-bar]', battle.energy);
+  const elements = view.querySelectorAll('.mob-unit');
+  if (elements.length !== battle.mobs.length) { render(); return; }
+  battle.mobs.forEach((mob,index) => {
+    const node = elements[index];
+    if (node.dataset.mobId !== mob.id) { render(); return; }
+    node.dataset.mobHp = String(mob.hp);
+    node.classList.toggle('fallen',mob.hp <= 0);
+    const bar = node.querySelector('.mob-hp span');
+    if(bar) bar.style.width = Math.round(mob.hp/mob.maxHp*100)+'%';
+  });
+}
 
 let combatBusy=false;
 const combatSleep=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -1086,7 +1129,7 @@ async function battleAction(action) {
    next.round++;
    next.enemyHp=next.mobs.reduce((sum,m)=>sum+m.hp,0);
    if(next.enemyHp===0){
-      battle=next;if(screen==='battle'){render();battleImpact(action,damage||45);}
+      battle=next;if(screen==='battle'){syncBattleView();battleImpact(action,damage||45);}
       await combatSleep(600);
       if(battle!==next)return;
       if(next.wave<next.waves){
@@ -1107,7 +1150,7 @@ async function battleAction(action) {
       battle=null;if(screen==='battle')screen='result';render();return;
    }
    battle=next;
-   if(screen==='battle'){render();battleImpact(action,damage||45);}
+   if(screen==='battle'){syncBattleView();battleImpact(action,damage||45);}
  }finally{combatBusy=false;}
 }
 
