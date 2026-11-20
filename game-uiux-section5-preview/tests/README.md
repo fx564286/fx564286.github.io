@@ -55,3 +55,15 @@ npm run test:single:a11y
 - `test:single:a11y`: checks reversible stat points, mock skill-tree paths, potion threshold, pet/mount unlock proposal preview, persistent battle DOM during settings changes, pinned combat scene when lower panel scrolls, original sprite armor colors, JavaScript errors, and reduced-motion accessibility.
 
 A browser passing these visual tests does not establish actual combat-core, engine, network, Android, Safari or gameplay validation. The demo gold, stats, skill tree, equipment labels, enemy damage, and companion availability are non-authoritative visual fixtures.
+
+## UI5-013 — character art and inspection
+
+The one-screen UI now contains an embedded 1024x1536 transparent WebP character portrait, sourced from a newly generated **unapproved visual mock asset** (no final art rig or segmented equipment layers). The separate Appearance tab and tapping the character in combat open full-body / face inspection with zoom and reset.
+
+```bash
+export UI5_CHROME_PATH=/absolute/path/to/chromium
+export UI5_PREVIEW_URL=https://fx564286.github.io/game-uiux-section5-preview/one-screen.html?build=ui5-013
+npm run test:character
+```
+
+This suite checks 320/390/768/1365 layouts, image loading and 1024x1536 dimensions, absence of the previous player SVG, 7 monster placeholders, no viewport overflow, tappable hero, detailed view and zoom, and browser exceptions. Existing `test:single:a11y` now validates the new image-based actor identity rather than the removed SVG. This visual asset does **not** constitute an animated sprite sheet or equipment-layer binding.
